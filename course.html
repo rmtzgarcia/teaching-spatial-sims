@@ -574,7 +574,6 @@ const PlantModule = (function(){
       if(Math.random()*total < totalBirth) doBirth(); else doDeath(deathRates,totalDeath);
       tHist.push(t); nHist.push(positions.length);
     }
-    if(tHist.length>3000){ tHist=tHist.slice(-3000); nHist=nHist.slice(-3000); }
   }
 
   function pairCorrelation(nBins){
@@ -885,7 +884,6 @@ const ColicinModule = (function(){
     let c1=0,c2=0;
     for(let i=0;i<n;i++){ if(grid[i]===1)c1++; else if(grid[i]===2)c2++; }
     histT.push(time); histF1.push(c1/n); histF2.push(c2/n);
-    if(histT.length>3000){ histT.shift(); histF1.shift(); histF2.shift(); }
   }
 
   function step(){
@@ -1097,7 +1095,6 @@ const RPSModule = (function(){
     let ca=0,cb=0,cc=0;
     for(let i=0;i<n;i++){ if(grid[i]===A)ca++; else if(grid[i]===B)cb++; else if(grid[i]===C)cc++; }
     histT.push(time); histA.push(ca/n); histB.push(cb/n); histC.push(cc/n);
-    if(histT.length>3000){ histT.shift(); histA.shift(); histB.shift(); histC.shift(); }
   }
   function sweep(){
     const passes=[
@@ -1229,7 +1226,6 @@ const CSRModule = (function(){
     let cc=0,cs=0,cr=0;
     for(let i=0;i<n;i++){ if(grid[i]===C)cc++; else if(grid[i]===S)cs++; else if(grid[i]===R)cr++; }
     histT.push(time); histC.push(cc/n); histS.push(cs/n); histR.push(cr/n);
-    if(histT.length>3000){ histT.shift(); histC.shift(); histS.shift(); histR.shift(); }
   }
   function neighborFractions(){
     const L=size, n=L*L;
