@@ -729,21 +729,14 @@ const PlantModule = (function(){
     render();
   }
 
-  let plantFrameCount=0;
   function tick(){
     if(!isPanelActive('panelPlant')) return;
-    if(running){
-      stepEvents(EVENTS_PER_FRAME);
-      plantFrameCount++;
-      if(plantFrameCount%20===0) render();
-    } else {
-      render();
-    }
+    if(running) stepEvents(EVENTS_PER_FRAME);
+    render();
   }
   document.addEventListener('DOMContentLoaded', init);
   return { tick };
 })();
-
 
 // ============================================================
 // 1D contact process (event-driven, ring lattice)
