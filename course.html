@@ -694,12 +694,13 @@ const PlantModule = (function(){
         refLines:[{y:1,color:'#999',dash:[5,4]}]
       });
     }
+  }
 
   // ---------------- UI wiring ----------------
   function syncReadouts(){
     document.getElementById('plantRcVal').textContent=rc.toFixed(2);
     document.getElementById('plantSVal').textContent=s.toFixed(2);
-    document.getElementById('plantBVal').textContent=b.toFixed(2);
+        document.getElementById('plantBVal').textContent=b.toFixed(2);
     document.getElementById('plantDVal').textContent=d.toFixed(3);
     document.getElementById('plantGVal').textContent=g.toFixed(2);
   }
