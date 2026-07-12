@@ -85,37 +85,37 @@
     </div>
     <div class="home-grid">
       <div class="home-card">
-        <h3>🌱 Plant competition</h3>
+        <h3>Off-lattice logistic model</h3>
         <p>A birth-death process with density-dependent competition among individuals in continuous space. Choose between Gaussian and top-hat competition kernels and watch clustering vs. regularity emerge.</p>
         <div class="ref">Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025)</div>
         <button class="btn primary" data-target="panelPlant">Open</button>
       </div>
       <div class="home-card">
-        <h3>🦠 Contact process (1D)</h3>
-        <p>The classic birth-death interacting particle system on a ring of sites. Tune the birth probability p across the critical point p_c ≈ 0.6494 and watch the population survive or die out.</p>
+        <h3>On-lattice logistic model (1D)</h3>
+        <p>The classic birth-death interacting particle system on a ring of sites.</p>
         <div class="ref">Classic interacting-particle-system model</div>
         <button class="btn primary" data-target="panelCP1D">Open</button>
       </div>
       <div class="home-card">
-        <h3>☠️ Colicin allelopathy</h3>
+        <h3>Colicin allelopathy</h3>
         <p>Producer vs. sensitive cells on a lattice. Producers poison their neighbors — watch clumps of producers take over, or lose, depending on toxicity.</p>
         <div class="ref">Durrett &amp; Levin, J. theor. Biol. 185 (1997)</div>
         <button class="btn primary" data-target="panelColicin">Open</button>
       </div>
       <div class="home-card">
-        <h3>🪨📄✂️ Mobility &amp; biodiversity</h3>
+        <h3>Mobility &amp; biodiversity</h3>
         <p>Spatial rock-paper-scissors with selection, reproduction, and mobility (exchange). Cross the critical mobility and watch spiral waves collapse into a single surviving species.</p>
         <div class="ref">Reichenbach, Mobilia &amp; Frey, Nature 448 (2007)</div>
         <button class="btn primary" data-target="panelRPS">Open</button>
       </div>
       <div class="home-card">
-        <h3>🧫 Local vs. global dispersal</h3>
+        <h3>Local vs. global dispersal</h3>
         <p>The E. coli C-S-R rock-paper-scissors game. Flip between local (Moore neighborhood) and well-mixed interaction and see biodiversity collapse under global dispersal.</p>
         <div class="ref">Kerr, Riley, Feldman &amp; Bohannan, Nature 418 (2002)</div>
         <button class="btn primary" data-target="panelCSR">Open</button>
       </div>
       <div class="home-card">
-        <h3>🦏 Step-selection functions</h3>
+        <h3>Step-selection functions</h3>
         <p>Simulate an animal's movement through habitat, then try to recover its hidden habitat-preference weights from the simulated steps.</p>
         <div class="ref">Step-Selection Functions for Modeling Animal Movement</div>
         <button class="btn primary" data-target="panelSSF">Open</button>
@@ -126,7 +126,7 @@
   <!-- ================= PLANT COMMUNITY ================= -->
   <div class="panel" id="panelPlant">
     <button class="btn backbtn" data-home>&larr; Back to menu</button>
-    <h2 class="sectiontitle">Plant community competition</h2>
+    <h2 class="sectiontitle">Off-lattice spatial logistic model</h2>
     <div class="sectionsub">Exact continuous-time spatial birth-death individual-based model (Gillespie SSA), periodic domain. Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025), Section 2.1.</div>
     <div class="layout">
       <div class="sidebar">
@@ -185,13 +185,13 @@
   <!-- ================= CONTACT PROCESS 1D ================= -->
   <div class="panel" id="panelCP1D">
     <button class="btn backbtn" data-home>&larr; Back to menu</button>
-    <h2 class="sectiontitle">1D contact process</h2>
-    <div class="sectionsub">Event-driven birth-death process on a ring of N sites. Critical point p_c ≈ 0.6494 (large N): below it the population always dies out, above it it can survive indefinitely.</div>
+    <h2 class="sectiontitle">On-lattice logistic model</h2>
+    <div class="sectionsub">Event-driven birth-death process on a ring of N sites.</div>
     <div class="layout">
       <div class="sidebar">
         <div class="card">
           <div class="field">
-            <label>birth probability p <span class="readout" id="cpPVal">0.850</span></label>
+            <label>Birth probability p <span class="readout" id="cpPVal">0.850</span></label>
             <input type="range" id="cpP" min="0" max="1" step="0.001" value="0.85">
           </div>
           <div class="field">
