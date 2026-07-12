@@ -380,18 +380,39 @@ function isPanelActive(id){
 // ============================================================
 function drawSeriesChart(canvas, opts){
   const series=opts.series||[];
+  const xMin=opts.xMin!==undefined?opts.xMin:0;
   const xMax=opts.xMax||10, yMin=opts.yMin!==undefined?opts.yMin:0, yMax=opts.yMax!==undefined?opts.yMax:1;
   const xlabel=opts.xlabel||'', ylabel=opts.ylabel||'';
   const refLines=opts.refLines||[];
   const ctx=canvas.getContext('2d');
   const w=canvas.width, h=canvas.height;
   ctx.clearRect(0,0,w,h);
-  const padL=44,padR=12,padT=14,padB=26;
+  const padL=50,padR=12,padT=14,padB=34;
   const plotW=Math.max(10,w-padL-padR), plotH=Math.max(10,h-padT-padB);
+  function decimalsFor(range){
+    if(range>=50) return 0;
+    if(range>=5) return 1;
+    return 2;
+  }
+  function fmtTick(v, decimals){
+    if(Math.abs(v)<1e-9) return '0';
+    return decimals===0 ? Math.round(v).toString() : v.toFixed(decimals);
+  }
+  const xDec=decimalsFor(xMax-xMin), yDec=decimalsFor(yMax-yMin);
+  const X=x=>padL+((x-xMin)/((xMax-xMin)||1))*plotW;
+  const Y=y=>padT+plotH-((y-yMin)/((yMax-yMin)||1))*plotH;
+  const nXTicks=5, nYTicks=5;
+  ctx.strokeStyle='#ece7db'; ctx.lineWidth=1;
+  for(let i=1;i<nXTicks-1;i++){
+    const px=X(xMin+(xMax-xMin)*i/(nXTicks-1));
+    ctx.beginPath(); ctx.moveTo(px,padT); ctx.lineTo(px,padT+plotH); ctx.stroke();
+  }
+  for(let i=1;i<nYTicks-1;i++){
+    const py=Y(yMin+(yMax-yMin)*i/(nYTicks-1));
+    ctx.beginPath(); ctx.moveTo(padL,py); ctx.lineTo(padL+plotW,py); ctx.stroke();
+  }
   ctx.strokeStyle='#d8d2c3'; ctx.lineWidth=1;
   ctx.strokeRect(padL+0.5,padT+0.5,plotW,plotH);
-  const X=x=>padL+(x/(xMax||1))*plotW;
-  const Y=y=>padT+plotH-((y-yMin)/((yMax-yMin)||1))*plotH;
   refLines.forEach(rl=>{
     if(rl.y===null||rl.y===undefined||Number.isNaN(rl.y)) return;
     ctx.save();
@@ -409,6 +430,22 @@ function drawSeriesChart(canvas, opts){
     });
     ctx.stroke();
   });
+  ctx.fillStyle='#736c60'; ctx.font='10px sans-serif'; ctx.strokeStyle='#a49d8f'; ctx.lineWidth=1;
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<nXTicks;i++){
+    const xv=xMin+(xMax-xMin)*i/(nXTicks-1);
+    const px=X(xv);
+  ctx.beginPath(); ctx.moveTo(px,padT+plotH); ctx.lineTo(px,padT+plotH+4); ctx.stroke();
+    ctx.fillText(fmtTick(xv, xDec), px, padT+plotH+6);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<nYTicks;i++){
+    const yv=yMin+(yMax-yMin)*i/(nYTicks-1);
+    const py=Y(yv);
+    ctx.beginPath(); ctx.moveTo(padL-4,py); ctx.lineTo(padL,py); ctx.stroke();
+    ctx.fillText(fmtTick(yv, yDec), padL-7, py);
+  }
+  ctx.textBaseline='alphabetic';
   ctx.fillStyle='#736c60'; ctx.font='11px sans-serif';
   ctx.save();
   ctx.translate(12,padT+plotH/2);
@@ -426,7 +463,6 @@ function drawSeriesChart(canvas, opts){
     lx+=18+ctx.measureText(s.label).width+16;
   });
 }
-
 // ============================================================
 // Shared grid renderer (nearest-neighbor upscaled ImageData)
 // ============================================================
