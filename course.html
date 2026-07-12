@@ -533,6 +533,7 @@ const PlantModule = (function(){
     if(kernelType==='gaussian') return Math.exp(-(dist*dist)/(2*rc*rc))/(2*Math.PI*rc*rc);
     return dist<=rc ? 1.0/(Math.PI*rc*rc) : 0.0;
   }
+  let nHistMin=0, nHistMax=0;
   function predictedEq(bb,dd,gg){
     if(gg<=0) return NaN;
     const densH=(bb-dd)/gg;
@@ -553,6 +554,7 @@ const PlantModule = (function(){
     positions=[];
     for(let i=0;i<nInit;i++) positions.push({x:Math.random()*DOMAIN_L, y:Math.random()*DOMAIN_L});
     t=0; tHist=[0]; nHist=[positions.length];
+    nHistMin=positions.length; nHistMax=positions.length;
     compSum=new Array(positions.length).fill(0);
     for(let i=0;i<positions.length;i++){
       let sum=0;
@@ -609,6 +611,8 @@ const PlantModule = (function(){
       t += -Math.log(Math.random())/total;
       if(Math.random()*total < totalBirth) doBirth(); else doDeath(deathRates,totalDeath);
       tHist.push(t); nHist.push(positions.length);
+      if(positions.length<nHistMin) nHistMin=positions.length;
+      if(positions.length>nHistMax) nHistMax=positions.length;
     }
   }
 
@@ -658,26 +662,38 @@ const PlantModule = (function(){
 
     const chart=document.getElementById('plantChart');
     const nStar=predictedEq(b,d,g);
-    const nMax=Math.max(10, ...nHist, Number.isFinite(nStar)?nStar:0)*1.15;
+    let loY=nHistMin, hiY=nHistMax;
+    if(Number.isFinite(nStar)){ loY=Math.min(loY,nStar); hiY=Math.max(hiY,nStar); }
+    if(!(hiY>loY)) hiY=loY+10;
+    const padY=(hiY-loY)*0.1 || 1;
+    const yMinPop=Math.max(0, loY-padY);
+    const yMaxPop=hiY+padY;
     const tMax=Math.max(t*1.05, 1e-3);
     drawSeriesChart(chart,{
       series:[{label:'population',color:'#000',data:tHist.map((tt,i)=>({x:tt,y:nHist[i]}))}],
-      xMax:tMax, yMin:0, yMax:nMax,
+      xMax:tMax, yMin:yMinPop, yMax:yMaxPop,
       xlabel:'t', ylabel:'# individuals',
       refLines:[{y:nStar,color:'red',dash:[5,4]}]
     });
 
     if(lastCorr){
       const cc=document.getElementById('plantCorrChart');
-      const cMax=Math.max(2, ...lastCorr.C)*1.15;
+      let loC=Infinity, hiC=-Infinity;
+      for(let i=0;i<lastCorr.C.length;i++){ const v=lastCorr.C[i]; if(v<loC) loC=v; if(v>hiC) hiC=v; }
+      if(!Number.isFinite(loC)) loC=0;
+      if(!Number.isFinite(hiC)) hiC=2;
+      loC=Math.min(loC,1); hiC=Math.max(hiC,1);
+      if(!(hiC>loC)) hiC=loC+1;
+      const padC=(hiC-loC)*0.1 || 0.1;
+      const yMinC=Math.max(0, loC-padC);
+      const yMaxC=hiC+padC;
       drawSeriesChart(cc,{
         series:[{label:'C(r)',color:'#000',data:lastCorr.rCenters.map((r,i)=>({x:r,y:lastCorr.C[i]}))}],
-        xMax:DOMAIN_L/2, yMin:0, yMax:cMax,
+        xMax:DOMAIN_L/2, yMin:yMinC, yMax:yMaxC,
         xlabel:'r', ylabel:'C(r)',
         refLines:[{y:1,color:'#999',dash:[5,4]}]
       });
     }
-  }
 
   // ---------------- UI wiring ----------------
   function syncReadouts(){
