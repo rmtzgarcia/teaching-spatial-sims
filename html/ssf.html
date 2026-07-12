@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Step-Selection Function Simulator</title>
+<style>
+  :root{
+    --bg:#faf8f3; --panel:#ffffff; --ink:#242220; --muted:#736c60;
+    --grass:#3f9142; --grass-soft:#e3f0df;
+    --water:#2f6fed; --water-soft:#e2ecfd;
+    --tree:#8a5a2b;  --tree-soft:#efe4d6;
+    --accent:#d7263d; --border:#e6e1d6; --border2:#d8d2c3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:17px; line-height:1.4;
+  }
+  .wrap{max-width:1300px;margin:0 auto;padding:22px 26px 60px;}
+  header h1{font-size:27px;margin:0 0 3px;}
+  header .sub{color:var(--muted);font-size:15px;margin-bottom:18px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+  .legend{display:flex;gap:22px;flex-wrap:wrap;align-items:center;font-size:15px;color:var(--muted);}
+  .legend .dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+  .landscape-row{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+  .thumb-block{text-align:center;}
+  .thumb-block canvas{border-radius:6px;border:1px solid var(--border2);display:block;}
+  .thumb-block .cap{font-size:13px;margin-top:4px;color:var(--muted);font-weight:600;}
+  .btn{
+    font-size:15px;font-weight:600;border:1px solid var(--border2);background:#fff;color:var(--ink);
+    padding:10px 16px;border-radius:8px;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{border-color:#b8b09c;background:#f6f3ec;}
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.45;cursor:default;}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn.primary:hover{background:#3a3733;}
+  .btn.small{padding:6px 12px;font-size:13px;}
+  .toggle-group{display:inline-flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden;}
+  .toggle-group button{
+    border:none;background:#fff;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);
+    border-right:1px solid var(--border2);
+  }
+  .toggle-group button:last-child{border-right:none;}
+  .toggle-group button.active{background:var(--ink);color:#fff;}
+
+  .tabs{display:flex;gap:10px;margin-bottom:16px;}
+  .tabbtn{
+    font-size:17px;font-weight:700;padding:12px 20px;border-radius:10px 10px 0 0;border:1px solid var(--border);
+    background:#f1ede2;color:var(--muted);cursor:pointer;border-bottom:none;
+  }
+  .tabbtn.active{background:var(--panel);color:var(--ink);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .layout{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+  .sidebar{width:280px;flex-shrink:0;}
+  .main{flex:1;min-width:520px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:flex;justify-content:space-between;font-weight:700;font-size:15px;margin-bottom:4px;}
+  .field .readout{font-variant-numeric:tabular-nums;font-weight:700;}
+  input[type=range]{width:100%;height:26px;accent-color:var(--ink);cursor:pointer;}
+  .hint{font-size:13px;color:var(--muted);margin-top:2px;}
+
+  canvas.stage{border-radius:8px;border:1px solid var(--border2);display:block;max-width:100%;}
+  .bg-toggle{margin-bottom:10px;}
+  .stepline{font-size:14px;color:var(--muted);margin-top:8px;}
+
+  .consider{margin-top:12px;}
+  .consider .row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .consider .tag{width:64px;font-size:12px;color:var(--muted);flex-shrink:0;}
+  .consider .track{flex:1;height:14px;background:#f1efe9;border-radius:4px;position:relative;overflow:hidden;}
+  .consider .fill{position:absolute;left:0;top:0;bottom:0;background:#b8b09c;border-radius:4px;}
+  .consider .row.chosen .fill{background:var(--accent);}
+  .consider .row.chosen .tag{color:var(--accent);font-weight:700;}
+
+  details.info{margin-top:12px;font-size:14px;color:var(--muted);}
+  details.info summary{cursor:pointer;font-weight:700;color:var(--ink);}
+  details.info p{margin:8px 0 0;}
+
+  .lockbox{
+    border:2px dashed var(--border2);border-radius:8px;padding:14px 16px;text-align:center;color:var(--muted);
+    font-weight:600;margin-bottom:14px;background:#f6f3ec;
+  }
+  .lockbox.open{border-style:solid;background:var(--grass-soft);color:#2c5c2e;}
+
+  .chartblock{margin-top:16px;}
+  .chartblock h3{font-size:15px;margin:0 0 2px;}
+  .chartblock .cap{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .barrow{display:flex;align-items:center;margin:9px 0;font-size:15px;}
+  .barlabel{width:64px;font-weight:700;flex-shrink:0;}
+  .bartrack{position:relative;height:26px;background:#f1efe9;border-radius:5px;flex:1;margin:0 10px;}
+  .barzero{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#c9c2b2;}
+  .barfill{position:absolute;top:3px;bottom:3px;border-radius:3px;transition:left .2s ease,width .2s ease;}
+  .tick{position:absolute;top:-5px;bottom:-5px;width:3px;background:#1f2937;border-radius:2px;}
+  .barvalue{width:60px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px;flex-shrink:0;}
+
+  table.results{border-collapse:collapse;width:100%;margin-top:14px;font-size:15px;}
+  table.results th, table.results td{border:1px solid var(--border);padding:7px 10px;text-align:right;}
+  table.results th:first-child, table.results td:first-child{text-align:left;}
+  table.results th{background:#f6f3ec;}
+
+  footer{margin-top:26px;font-size:12.5px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Step-Selection Function Simulator</h1>
+    <div class="sub"> <em>Step-Selection Functions for Modeling Animal Movement — Virtual rhino</em>, Section 2.</div>
+  </header>
+
+  <div class="card">
+    <div class="landscape-row">
+      <div class="thumb-block"><canvas id="thumbGrass" width="210" height="126"></canvas><div class="cap">Grass</div></div>
+      <div class="thumb-block"><canvas id="thumbWater" width="210" height="126"></canvas><div class="cap">Water</div></div>
+      <div class="thumb-block"><canvas id="thumbTree" width="210" height="126"></canvas><div class="cap">Tree cover</div></div>
+      <div style="flex:1;min-width:180px;">
+        <div class="legend" style="margin-bottom:10px;">
+          <span><span class="dot" style="background:var(--grass)"></span>Grass</span>
+          <span><span class="dot" style="background:var(--water)"></span>Water</span>
+          <span><span class="dot" style="background:var(--tree)"></span>Tree</span>
+          <span><span class="dot" style="background:var(--accent)"></span>Path</span>
+        </div>
+        <button class="btn" id="btnNewLandscape">&#128256; New landscape</button>
+        <div class="hint" style="margin-top:8px;">Three independent, spatially-smooth covariate surfaces — like the grass / water / trees in Section 2's toy example.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tabbtn active" id="tabExploreBtn">1 &nbsp;Explore</button>
+    <button class="tabbtn" id="tabChallengeBtn">2 &nbsp;Guess the Weights</button>
+  </div>
+
+  <!-- ================= EXPLORE PANEL ================= -->
+  <div class="panel active" id="panelExplore">
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field">
+            <label>&beta; Grass <span class="readout" id="valGrass" style="color:var(--grass)">0.0</span></label>
+            <input type="range" id="sliderGrass" min="-3" max="3" step="0.1" value="0">
+          </div>
+          <div class="field">
+            <label>&beta; Water <span class="readout" id="valWater" style="color:var(--water)">0.0</span></label>
+            <input type="range" id="sliderWater" min="-3" max="3" step="0.1" value="0">
+          </div>
+          <div class="field">
+            <label>&beta; Tree <span class="readout" id="valTree" style="color:var(--tree)">0.0</span></label>
+            <input type="range" id="sliderTree" min="-3" max="3" step="0.1" value="0">
+          </div>
+          <div class="hint" style="margin-bottom:14px;">Positive = attracted to that habitat. Negative = avoids it. Zero = indifferent.</div>
+          <div class="field" style="margin-bottom:12px;">
+            <label for="stepsExploreInput">Number of steps</label>
+            <input type="number" id="stepsExploreInput" min="1" max="1000" step="1" value="40" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:15px;">
+            <div class="hint">Choose how many movement steps to simulate in this run.</div>
+          </div>
+          <button class="btn primary" id="btnRunExplore" style="width:100%;">&#9654; Run <span id="exploreStepsLabel">40</span> steps</button>
+          <details class="info">
+            <summary>What's happening?</summary>
+            <p>At every move the animal proposes a handful of candidate steps (random length &amp; turning angle, drawn from realistic distributions). Each candidate gets weight w(x) = exp(&beta;&middot;x). One is chosen at random, weighted by those scores — exactly the P(Y) formula from Section 2.</p>
+          </details>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <div class="bg-toggle toggle-group" id="bgToggleExplore">
+            <button data-layer="blend" class="active">Blend</button>
+            <button data-layer="grass">Grass</button>
+            <button data-layer="water">Water</button>
+            <button data-layer="tree">Tree</button>
+          </div>
+          <canvas class="stage" id="canvasExplore" width="700" height="420"></canvas>
+          <div class="stepline" id="stepLineExplore">Step 0 / 40</div>
+          <div class="consider" id="considerExplore"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CHALLENGE PANEL ================= -->
+  <div class="panel" id="panelChallenge">
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="lockbox" id="lockbox">&#128274; True &beta;'s are hidden</div>
+          <button class="btn primary" id="btnNewSecret" style="width:100%;margin-bottom:10px;">&#127922; New secret animal</button>
+          <div class="field" style="margin-bottom:12px;">
+            <label for="stepsChallengeInput">Number of steps</label>
+            <input type="number" id="stepsChallengeInput" min="1" max="2000" step="1" value="500" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:15px;">
+            <div class="hint">Choose how many steps to simulate before fitting the SSF.</div>
+          </div>
+          <button class="btn primary" id="btnRunChallenge" style="width:100%;margin-bottom:14px;" disabled>&#9654; Run <span id="challengeStepsLabel">500</span> steps</button>
+          <div class="field" style="margin-bottom:8px;">
+            <label style="margin-bottom:6px;">Alternatives per step (k)</label>
+            <div class="toggle-group" id="kToggle" style="width:100%;display:flex;">
+              <button data-k="2">2</button><button data-k="3">3</button>
+              <button data-k="5" class="active">5</button><button data-k="8">8</button>
+            </div>
+            <div class="hint">How many random alternative steps compete against the used one, each step.</div>
+          </div>
+          <button class="btn small" id="btnReveal" style="width:100%;margin-top:6px;" disabled>&#128065; Reveal true &beta;'s</button>
+          <details class="info">
+            <summary>What's happening?</summary>
+            <p>Same generative model as tab 1, but the &beta;'s are secret. After the run, the "steps used in model" slider re-fits a conditional-logit model to a growing prefix of the used/available steps — watch the estimate stabilize as more data comes in.</p>
+          </details>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <div class="bg-toggle toggle-group" id="bgToggleChallenge">
+            <button data-layer="blend" class="active">Blend</button>
+            <button data-layer="grass">Grass</button>
+            <button data-layer="water">Water</button>
+            <button data-layer="tree">Tree</button>
+          </div>
+          <canvas class="stage" id="canvasChallenge" width="700" height="420"></canvas>
+          <div class="stepline" id="stepLineChallenge">Click "New secret animal" to begin.</div>
+          <div class="consider" id="considerChallenge"></div>
+        </div>
+        <div class="card" id="fitCard" style="display:none;">
+          <div class="field">
+            <label>Steps used in model <span class="readout" id="stepsUsedVal">0</span></label>
+            <input type="range" id="stepsSlider" min="1" max="500" step="1" value="1">
+          </div>
+          <div class="chartblock">
+            <h3>SSF estimate (&beta;&#770;)</h3>
+            <div class="cap">Conditional-logit fit to used-vs-available steps — compares each choice to what was actually offered at that moment.</div>
+            <div id="ssfChart"></div>
+          </div>
+          <div class="chartblock">
+            <h3>Naive score</h3>
+            <div class="cap">Average habitat at visited points, minus the whole-map average — ignores local availability entirely.</div>
+            <div id="naiveChart"></div>
+          </div>
+          <div id="revealTable"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Zero external dependencies — runs fully offline. Landscape = 3 independent smooth random surfaces; movement kernel = Gamma step lengths &times; von-Mises-like turning angles; choice rule = w(x) = exp(&beta;&middot;x). </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ---------------- constants ----------------
+const COLS=70, ROWS=42, CELL=10, TCELL=3;
+const COV=[
+  {key:'grass', label:'Grass', color:'#3f9142', rgb:{r:63,g:145,b:66},  coarse:[11,8]},
+  {key:'water', label:'Water', color:'#2f6fed', rgb:{r:47,g:111,b:237}, coarse:[9,7]},
+  {key:'tree',  label:'Tree',  color:'#8a5a2b', rgb:{r:138,g:90,b:43},  coarse:[13,10]},
+];
+const MOVE={gammaShape:2, gammaScale:4.2, kappa:3};
+const BASE_RGB={r:245,g:240,b:222};
+
+// ---------------- RNG & noise ----------------
+function mulberry32(seed){
+  return function(){
+    seed|=0; seed=(seed+0x6D2B79F5)|0;
+    let t=Math.imul(seed^(seed>>>15),1|seed);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+let seedCounter=Date.now()%1000000;
+function newRng(){ seedCounter=(seedCounter+104729)%2147483647; return mulberry32(seedCounter); }
+
+function makeField(cols,rows,coarseCols,coarseRows,rng){
+  const coarse=[];
+  for(let j=0;j<=coarseRows;j++){const row=[];for(let i=0;i<=coarseCols;i++)row.push(rng());coarse.push(row);}
+  const field=new Float64Array(cols*rows);
+  let min=Infinity,max=-Infinity;
+  for(let y=0;y<rows;y++){
+    const fy=(y/(rows-1))*coarseRows, y0=Math.floor(fy), y1=Math.min(y0+1,coarseRows), ty=fy-y0;
+    for(let x=0;x<cols;x++){
+      const fx=(x/(cols-1))*coarseCols, x0=Math.floor(fx), x1=Math.min(x0+1,coarseCols), tx=fx-x0;
+      const v00=coarse[y0][x0], v10=coarse[y0][x1], v01=coarse[y1][x0], v11=coarse[y1][x1];
+      const v0=v00*(1-tx)+v10*tx, v1=v01*(1-tx)+v11*tx;
+      let v=v0*(1-ty)+v1*ty;
+      v+=(rng()-0.5)*0.05;
+      field[y*cols+x]=v;
+      if(v<min)min=v; if(v>max)max=v;
+    }
+  }
+  for(let i=0;i<field.length;i++) field[i]=(field[i]-min)/(max-min);
+  return field;
+}
+function sampleField(field,cols,rows,x,y){
+  const xi=Math.max(0,Math.min(cols-1.001,x)), yi=Math.max(0,Math.min(rows-1.001,y));
+  const x0=Math.floor(xi), x1=x0+1, tx=xi-x0, y0=Math.floor(yi), y1=y0+1, ty=yi-y0;
+  const v00=field[y0*cols+x0], v10=field[y0*cols+Math.min(x1,cols-1)];
+  const v01=field[Math.min(y1,rows-1)*cols+x0], v11=field[Math.min(y1,rows-1)*cols+Math.min(x1,cols-1)];
+  const v0=v00*(1-tx)+v10*tx, v1=v01*(1-tx)+v11*tx;
+  return v0*(1-ty)+v1*ty;
+}
+function fieldMean(field){let s=0;for(let i=0;i<field.length;i++)s+=field[i];return s/field.length;}
+
+// ---------------- movement kernel ----------------
+function sampleGamma(k,theta,rng){
+  if(k<1){const u=rng(); return sampleGamma(k+1,theta,rng)*Math.pow(u,1/k);}
+  const d=k-1/3, c=1/Math.sqrt(9*d);
+  while(true){
+    let x,v;
+    do{
+      const u1=rng(), u2=rng();
+      x=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+      v=1+c*x;
+    }while(v<=0);
+    v=v*v*v;
+    const u=rng();
+    if(u<1-0.0331*x*x*x*x) return d*v*theta;
+    if(Math.log(u)<0.5*x*x+d*(1-v+Math.log(v))) return d*v*theta;
+  }
+}
+function sampleTurnAngle(kappa,rng){
+  const sigma=1/Math.sqrt(kappa);
+  const u1=rng(), u2=rng();
+  const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+  let a=z*sigma;
+  while(a>Math.PI)a-=2*Math.PI;
+  while(a<-Math.PI)a+=2*Math.PI;
+  return a;
+}
+function proposeCandidates(fields,x,y,heading,k,rng){
+  const cands=[];
+  for(let i=0;i<k;i++){
+    let L,dtheta,nx,ny,h,tries=0;
+    do{
+      L=sampleGamma(MOVE.gammaShape,MOVE.gammaScale,rng);
+      dtheta=sampleTurnAngle(MOVE.kappa,rng);
+      h=heading+dtheta;
+      nx=x+L*Math.cos(h); ny=y+L*Math.sin(h);
+      tries++;
+    }while((nx<0||nx>=COLS||ny<0||ny>=ROWS)&&tries<20);
+    nx=Math.max(0,Math.min(COLS-1e-6,nx));
+    ny=Math.max(0,Math.min(ROWS-1e-6,ny));
+    const cov=fields.map(f=>sampleField(f,COLS,ROWS,nx,ny));
+    cands.push({x:nx,y:ny,heading:h,cov});
+  }
+  return cands;
+}
+function softmax(scores){
+  const m=Math.max(...scores);
+  const w=scores.map(s=>Math.exp(s-m));
+  const sum=w.reduce((a,b)=>a+b,0);
+  return w.map(wi=>wi/sum);
+}
+function chooseIndex(probs,rng){
+  let r=rng(),acc=0;
+  for(let i=0;i<probs.length;i++){acc+=probs[i]; if(r<=acc) return i;}
+  return probs.length-1;
+}
+
+// ---------------- conditional-logit fit ----------------
+function fitConditionalLogit(strata,nCov,{lr=0.2,iters=400,init=null}={}){
+  let beta=init?init.slice():new Array(nCov).fill(0);
+  if(strata.length===0) return beta;
+  for(let it=0;it<iters;it++){
+    const grad=new Array(nCov).fill(0);
+    for(const s of strata){
+      const scores=s.options.map(o=>beta.reduce((a,b,idx)=>a+b*o[idx],0));
+      const probs=softmax(scores);
+      for(let j=0;j<nCov;j++){
+        grad[j]+=s.options[s.chosenIndex][j];
+        for(let i=0;i<s.options.length;i++) grad[j]-=probs[i]*s.options[i][j];
+      }
+    }
+    for(let j=0;j<nCov;j++){
+      beta[j]+=lr*(grad[j]/strata.length);
+      beta[j]=Math.max(-9,Math.min(9,beta[j]));
+    }
+  }
+  return beta;
+}
+
+// ---------------- drawing helpers ----------------
+function setupCanvas(canvas,cssW,cssH){
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=cssW*dpr; canvas.height=cssH*dpr;
+  canvas.style.width=cssW+'px'; canvas.style.height=cssH+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return ctx;
+}
+function lerpChannel(a,b,t){return Math.round(a+(b-a)*t);}
+function drawLayer(ctx,cell,layerName,fields){
+  const w=COLS*cell, h=ROWS*cell;
+  ctx.clearRect(0,0,w,h);
+  if(layerName==='blend'){
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const g=fields[0][y*COLS+x], wv=fields[1][y*COLS+x], t=fields[2][y*COLS+x];
+        const wsum=1+g+wv+t;
+        const r=(BASE_RGB.r+COV[0].rgb.r*g+COV[1].rgb.r*wv+COV[2].rgb.r*t)/wsum;
+        const gc=(BASE_RGB.g+COV[0].rgb.g*g+COV[1].rgb.g*wv+COV[2].rgb.g*t)/wsum;
+        const bc=(BASE_RGB.b+COV[0].rgb.b*g+COV[1].rgb.b*wv+COV[2].rgb.b*t)/wsum;
+        ctx.fillStyle=`rgb(${r|0},${gc|0},${bc|0})`;
+        ctx.fillRect(x*cell,y*cell,cell+0.6,cell+0.6);
+      }
+    }
+  } else {
+    const idx=COV.findIndex(c=>c.key===layerName);
+    const field=fields[idx], rgb=COV[idx].rgb;
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const v=Math.pow(field[y*COLS+x],0.85);
+        const r=lerpChannel(BASE_RGB.r,rgb.r,v), g=lerpChannel(BASE_RGB.g,rgb.g,v), b=lerpChannel(BASE_RGB.b,rgb.b,v);
+        ctx.fillStyle=`rgb(${r},${g},${b})`;
+        ctx.fillRect(x*cell,y*cell,cell+0.6,cell+0.6);
+      }
+    }
+  }
+}
+function drawPath(ctx,cell,path){
+  if(path.length<2){
+    if(path.length===1) drawDot(ctx,cell,path[0]);
+    return;
+  }
+  ctx.beginPath();
+  ctx.moveTo(path[0].x*cell,path[0].y*cell);
+  for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x*cell,path[i].y*cell);
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=5.5; ctx.stroke();
+  ctx.strokeStyle='#d7263d'; ctx.lineWidth=2.6; ctx.stroke();
+  drawDot(ctx,cell,path[path.length-1]);
+  // start marker
+  ctx.beginPath(); ctx.arc(path[0].x*cell,path[0].y*cell,4,0,7); ctx.fillStyle='#1f2937'; ctx.fill();
+}
+function drawDot(ctx,cell,p){
+  ctx.beginPath(); ctx.arc(p.x*cell,p.y*cell,6,0,7);
+  ctx.fillStyle='#d7263d'; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle='#fff'; ctx.stroke();
+}
+function drawGhost(ctx,cell,path){
+  if(path.length<2) return;
+  ctx.beginPath();
+  ctx.moveTo(path[0].x*cell,path[0].y*cell);
+  for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x*cell,path[i].y*cell);
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  ctx.strokeStyle='rgba(120,110,95,0.45)'; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+}
+function drawRays(ctx,cell,from,candidates,probs){
+  candidates.forEach((c,i)=>{
+    const p=probs[i];
+    ctx.beginPath();
+    ctx.moveTo(from.x*cell,from.y*cell);
+    ctx.lineTo(c.x*cell,c.y*cell);
+    ctx.lineWidth=1+p*9;
+    ctx.strokeStyle=`rgba(30,28,25,${0.15+p*0.55})`;
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(c.x*cell,c.y*cell,2.5+p*5,0,7);
+    ctx.fillStyle=`rgba(30,28,25,${0.3+p*0.5})`; ctx.fill();
+  });
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ---------------- shared landscape state ----------------
+let fields=[], landscapeMeans=[];
+function regenerateLandscape(){
+  const rng=newRng();
+  fields=COV.map(c=>makeField(COLS,ROWS,c.coarse[0],c.coarse[1],rng));
+  landscapeMeans=fields.map(fieldMean);
+  const tg=setupCanvas(document.getElementById('thumbGrass'),210,126);
+  const tw=setupCanvas(document.getElementById('thumbWater'),210,126);
+  const tt=setupCanvas(document.getElementById('thumbTree'),210,126);
+  drawThumb(tg,'grass'); drawThumb(tw,'water'); drawThumb(tt,'tree');
+  redrawExplore(); redrawChallengeBackground();
+}
+function drawThumb(ctx,layer){ drawLayer(ctx,TCELL,layer,fields); }
+
+// ================= EXPLORE TAB =================
+const exploreState={ layer:'blend', path:[], ghost:[], animating:false };
+const canvasExplore=document.getElementById('canvasExplore');
+const ctxExplore=setupCanvas(canvasExplore,700,420);
+
+function redrawExplore(){
+  drawLayer(ctxExplore,CELL,exploreState.layer,fields);
+  drawGhost(ctxExplore,CELL,exploreState.ghost);
+  drawPath(ctxExplore,CELL,exploreState.path);
+}
+document.getElementById('bgToggleExplore').addEventListener('click',e=>{
+  const btn=e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#bgToggleExplore button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  exploreState.layer=btn.dataset.layer;
+  redrawExplore();
+});
+
+const sliders={
+  grass:document.getElementById('sliderGrass'),
+  water:document.getElementById('sliderWater'),
+  tree:document.getElementById('sliderTree'),
+};
+const valEls={grass:document.getElementById('valGrass'),water:document.getElementById('valWater'),tree:document.getElementById('valTree')};
+function currentExploreBeta(){ return [parseFloat(sliders.grass.value), parseFloat(sliders.water.value), parseFloat(sliders.tree.value)]; }
+Object.keys(sliders).forEach(k=>{
+  sliders[k].addEventListener('input',()=>{ valEls[k].textContent=parseFloat(sliders[k].value).toFixed(1); });
+});
+
+function renderConsider(containerId,candidates,probs,chosenIdx){
+  const el=document.getElementById(containerId);
+  el.innerHTML=candidates.map((c,i)=>{
+    const pct=(probs[i]*100).toFixed(0);
+    return `<div class="row ${i===chosenIdx?'chosen':''}"><div class="tag">option ${i+1}</div><div class="track"><div class="fill" style="width:${pct}%"></div></div><div class="tag" style="width:40px;text-align:right;">${pct}%</div></div>`;
+  }).join('');
+}
+
+const stepsExploreInput=document.getElementById('stepsExploreInput');
+const exploreStepsLabel=document.getElementById('exploreStepsLabel');
+function getExploreSteps(){
+  const n=parseInt(stepsExploreInput.value,10);
+  if(Number.isFinite(n)&&n>0) return n;
+  return 40;
+}
+function syncExploreStepLabel(){
+  exploreStepsLabel.textContent=getExploreSteps();
+}
+stepsExploreInput.addEventListener('input', syncExploreStepLabel);
+syncExploreStepLabel();
+
+const btnRunExplore=document.getElementById('btnRunExplore');
+btnRunExplore.addEventListener('click', runExplore);
+async function runExplore(){
+  if(exploreState.animating) return;
+  exploreState.animating=true;
+  btnRunExplore.disabled=true;
+  document.getElementById('btnNewLandscape').disabled=true;
+  const beta=currentExploreBeta();
+  const rng=newRng();
+  exploreState.ghost=exploreState.path;
+  exploreState.path=[];
+  let x=8+rng()*(COLS-16), y=8+rng()*(ROWS-16), heading=rng()*2*Math.PI;
+  exploreState.path.push({x,y});
+  const N=getExploreSteps();
+  for(let t=0;t<N;t++){
+    const cands=proposeCandidates(fields,x,y,heading,5,rng);
+    const scores=cands.map(c=>beta.reduce((s,b,idx)=>s+b*c.cov[idx],0));
+    const probs=softmax(scores);
+    redrawExplore();
+    drawRays(ctxExplore,CELL,{x,y},cands,probs);
+    renderConsider('considerExplore',cands,probs,-1);
+    document.getElementById('stepLineExplore').textContent=`Step ${t+1} / ${N}`;
+    await sleep(180);
+    const chosen=chooseIndex(probs,rng);
+    renderConsider('considerExplore',cands,probs,chosen);
+    x=cands[chosen].x; y=cands[chosen].y; heading=cands[chosen].heading;
+    exploreState.path.push({x,y});
+    redrawExplore();
+    await sleep(70);
+  }
+  exploreState.animating=false;
+  btnRunExplore.disabled=false;
+  document.getElementById('btnNewLandscape').disabled=false;
+}
+
+// ================= CHALLENGE TAB =================
+const challengeState={
+  layer:'blend', trueBeta:null, hidden:true, k:5, path:[], strata:[], animating:false, lastBetaHat:[0,0,0], ready:false
+};
+const canvasChallenge=document.getElementById('canvasChallenge');
+const ctxChallenge=setupCanvas(canvasChallenge,700,420);
+
+function redrawChallengeBackground(){
+  drawLayer(ctxChallenge,CELL,challengeState.layer,fields);
+  drawPath(ctxChallenge,CELL,challengeState.path);
+}
+document.getElementById('bgToggleChallenge').addEventListener('click',e=>{
+  const btn=e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#bgToggleChallenge button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  challengeState.layer=btn.dataset.layer;
+  redrawChallengeBackground();
+});
+document.getElementById('kToggle').addEventListener('click',e=>{
+  const btn=e.target.closest('button'); if(!btn || challengeState.animating) return;
+  document.querySelectorAll('#kToggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  challengeState.k=parseInt(btn.dataset.k,10);
+  if(challengeState.ready) runChallenge(); // re-run with same secret beta & landscape
+});
+
+const btnNewSecret=document.getElementById('btnNewSecret');
+const btnRunChallenge=document.getElementById('btnRunChallenge');
+const btnReveal=document.getElementById('btnReveal');
+const lockbox=document.getElementById('lockbox');
+const stepsChallengeInput=document.getElementById('stepsChallengeInput');
+const challengeStepsLabel=document.getElementById('challengeStepsLabel');
+function getChallengeSteps(){
+  const n=parseInt(stepsChallengeInput.value,10);
+  if(Number.isFinite(n)&&n>0) return n;
+  return 500;
+}
+function syncChallengeStepControls(){
+  const n=getChallengeSteps();
+  challengeStepsLabel.textContent=n;
+  const slider=document.getElementById('stepsSlider');
+  slider.max=n;
+  if(parseInt(slider.value,10) > n) slider.value=n;
+  document.getElementById('stepsUsedVal').textContent=slider.value;
+}
+stepsChallengeInput.addEventListener('input', syncChallengeStepControls);
+syncChallengeStepControls();
+
+btnNewSecret.addEventListener('click',()=>{
+  if(challengeState.animating) return;
+  const rng=newRng();
+  challengeState.trueBeta=[ (rng()-0.5)*5, (rng()-0.5)*5, (rng()-0.5)*5 ].map(v=>Math.round(v*100)/100);
+  challengeState.hidden=true;
+  challengeState.path=[]; challengeState.strata=[]; challengeState.lastBetaHat=[0,0,0];
+  challengeState.ready=false;
+  lockbox.textContent='🔒 True β\'s are hidden';
+  lockbox.classList.remove('open');
+  btnReveal.disabled=true;
+  btnRunChallenge.disabled=false;
+  document.getElementById('fitCard').style.display='none';
+  document.getElementById('stepLineChallenge').textContent=`Secret animal ready. Click "Run ${getChallengeSteps()} steps".`;
+  regenerateLandscape();
+  redrawChallengeBackground();
+});
+
+btnRunChallenge.addEventListener('click', runChallenge);
+
+async function runChallenge(){
+  if(challengeState.animating || !challengeState.trueBeta) return;
+  challengeState.animating=true;
+  btnRunChallenge.disabled=true; btnNewSecret.disabled=true; document.getElementById('btnNewLandscape').disabled=true;
+  document.getElementById('kToggle').querySelectorAll('button').forEach(b=>b.disabled=true);
+
+  const rng=newRng();
+  const beta=challengeState.trueBeta;
+  const k=challengeState.k;
+  const Nmax=getChallengeSteps(), animateFirst=20;
+  challengeState.path=[]; challengeState.strata=[];
+  let x=10+rng()*(COLS-20), y=10+rng()*(ROWS-20), heading=rng()*2*Math.PI;
+  challengeState.path.push({x,y});
+
+  for(let t=0;t<Nmax;t++){
+    const cands=proposeCandidates(fields,x,y,heading,k,rng);
+    const scores=cands.map(c=>beta.reduce((s,b,idx)=>s+b*c.cov[idx],0));
+    const probs=softmax(scores);
+    if(t<animateFirst){
+      redrawChallengeBackground();
+      drawRays(ctxChallenge,CELL,{x,y},cands,probs);
+      renderConsider('considerChallenge',cands,probs,-1);
+      document.getElementById('stepLineChallenge').textContent=`Simulating... step ${t+1} / ${Nmax}`;
+      await sleep(170);
+    }
+    const chosen=chooseIndex(probs,rng);
+    if(t<animateFirst) renderConsider('considerChallenge',cands,probs,chosen);
+    challengeState.strata.push({options:cands.map(c=>c.cov), chosenIndex:chosen});
+    x=cands[chosen].x; y=cands[chosen].y; heading=cands[chosen].heading;
+    challengeState.path.push({x,y});
+    if(t<animateFirst){ redrawChallengeBackground(); await sleep(50); }
+  }
+  redrawChallengeBackground();
+  document.getElementById('stepLineChallenge').textContent=`Done — ${Nmax} steps simulated (k=${k} alternatives each).`;
+  document.getElementById('considerChallenge').innerHTML='';
+
+  challengeState.animating=false;
+  challengeState.ready=true;
+  btnNewSecret.disabled=false; document.getElementById('btnNewLandscape').disabled=false;
+  document.getElementById('kToggle').querySelectorAll('button').forEach(b=>b.disabled=false);
+  btnReveal.disabled=false;
+
+  document.getElementById('fitCard').style.display='block';
+  const slider=document.getElementById('stepsSlider');
+  slider.max=Nmax; slider.value=Math.min(25,Nmax);
+  syncChallengeStepControls();
+  challengeState.lastBetaHat=[0,0,0];
+  updateFit(true);
+}
+
+const stepsSlider=document.getElementById('stepsSlider');
+let fitPending=false;
+stepsSlider.addEventListener('input',()=>{ document.getElementById('stepsUsedVal').textContent=stepsSlider.value; throttledFit(); });
+stepsSlider.addEventListener('change',()=>updateFit(true));
+function throttledFit(){
+  if(fitPending) return;
+  fitPending=true;
+  requestAnimationFrame(()=>{ updateFit(false); fitPending=false; });
+}
+
+function updateFit(refined){
+  const n=parseInt(stepsSlider.value,10);
+  document.getElementById('stepsUsedVal').textContent=n;
+  const strataSubset=challengeState.strata.slice(0,n);
+  const betaHat=fitConditionalLogit(strataSubset,3,{
+    lr:refined?0.2:0.25, iters:refined?450:150, init:challengeState.lastBetaHat
+  });
+  challengeState.lastBetaHat=betaHat;
+
+  // naive score: mean covariate at used points (subset) minus whole-landscape mean
+  const naive=[0,1,2].map(idx=>{
+    let s=0; for(const st of strataSubset) s+=st.options[st.chosenIndex][idx];
+    const usedMean=strataSubset.length? s/strataSubset.length : 0;
+    return usedMean-landscapeMeans[idx];
+  });
+
+  renderCharts(betaHat,naive);
+}
+
+function renderCharts(betaHat,naive){
+  const hidden=challengeState.hidden;
+  const trueBeta=challengeState.trueBeta||[0,0,0];
+  const ssfScaleVals=betaHat.map(Math.abs).concat(hidden?[]:trueBeta.map(Math.abs));
+  const ssfScale=Math.max(2.5, ...ssfScaleVals)*1.15;
+  const naiveScale=Math.max(0.08, ...naive.map(Math.abs))*1.25;
+
+  document.getElementById('ssfChart').innerHTML=COV.map((c,i)=>barRow(c,betaHat[i],ssfScale,hidden?null:trueBeta[i])).join('');
+  document.getElementById('naiveChart').innerHTML=COV.map((c,i)=>barRow(c,naive[i],naiveScale,null)).join('');
+
+  if(!hidden){
+    const rows=COV.map((c,i)=>{
+      const err=Math.abs(trueBeta[i]-betaHat[i]);
+      return `<tr><td style="color:${c.color}">${c.label}</td><td>${trueBeta[i].toFixed(2)}</td><td>${betaHat[i].toFixed(2)}</td><td>${naive[i].toFixed(3)}</td><td>${err.toFixed(2)}</td></tr>`;
+    }).join('');
+    document.getElementById('revealTable').innerHTML=
+      `<table class="results"><thead><tr><th>Covariate</th><th>True &beta;</th><th>Estimated &beta;&#770;</th><th>Naive score</th><th>|Error|</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } else {
+    document.getElementById('revealTable').innerHTML='';
+  }
+}
+function barRow(cov,value,scale,trueValue){
+  const pct=v=>Math.max(0,Math.min(100, 50+(v/scale)*50));
+  const p=pct(value);
+  const left=value>=0?50:p, width=Math.abs(p-50);
+  let tick='';
+  if(trueValue!==null && trueValue!==undefined){
+    const tp=pct(trueValue);
+    tick=`<div class="tick" style="left:${tp}%"></div>`;
+  }
+  return `<div class="barrow">
+    <div class="barlabel" style="color:${cov.color}">${cov.label}</div>
+    <div class="bartrack"><div class="barzero"></div>${tick}<div class="barfill" style="left:${left}%;width:${width}%;background:${cov.color}"></div></div>
+    <div class="barvalue">${value.toFixed(2)}</div>
+  </div>`;
+}
+
+btnReveal.addEventListener('click',()=>{
+  challengeState.hidden=false;
+  lockbox.textContent='👁 True β (grass, water, tree) = '+challengeState.trueBeta.map(v=>v.toFixed(2)).join(', ');
+  lockbox.classList.add('open');
+  updateFit(true);
+});
+
+// ================= TABS =================
+document.getElementById('tabExploreBtn').addEventListener('click',()=>switchTab('explore'));
+document.getElementById('tabChallengeBtn').addEventListener('click',()=>switchTab('challenge'));
+function switchTab(name){
+  document.getElementById('tabExploreBtn').classList.toggle('active',name==='explore');
+  document.getElementById('tabChallengeBtn').classList.toggle('active',name==='challenge');
+  document.getElementById('panelExplore').classList.toggle('active',name==='explore');
+  document.getElementById('panelChallenge').classList.toggle('active',name==='challenge');
+}
+
+document.getElementById('btnNewLandscape').addEventListener('click',()=>{
+  if(exploreState.animating||challengeState.animating) return;
+  regenerateLandscape();
+});
+
+// ---------------- init ----------------
+regenerateLandscape();
+})();
+</script>
+</body>
+</html> 
