@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spatial Ecology &amp; Evolutionary Dynamics — Interactive Course</title>
+<style>
+  :root{
+    --bg:#faf8f3; --panel:#ffffff; --ink:#242220; --muted:#736c60;
+    --grass:#3f9142; --grass-soft:#e3f0df;
+    --water:#2f6fed; --water-soft:#e2ecfd;
+    --tree:#8a5a2b;  --tree-soft:#efe4d6;
+    --accent:#d7263d; --border:#e6e1d6; --border2:#d8d2c3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:17px; line-height:1.4;
+  }
+  .wrap{max-width:1300px;margin:0 auto;padding:22px 26px 60px;}
+  header h1{font-size:27px;margin:0 0 3px;}
+  header .sub{color:var(--muted);font-size:15px;margin-bottom:18px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+  .btn{
+    font-size:15px;font-weight:600;border:1px solid var(--border2);background:#fff;color:var(--ink);
+    padding:10px 16px;border-radius:8px;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{border-color:#b8b09c;background:#f6f3ec;}
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.45;cursor:default;}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn.primary:hover{background:#3a3733;}
+  .btn.small{padding:6px 12px;font-size:13px;}
+  .toggle-group{display:inline-flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden;}
+  .toggle-group button{
+    border:none;background:#fff;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);
+    border-right:1px solid var(--border2);
+  }
+  .toggle-group button:last-child{border-right:none;}
+  .toggle-group button.active{background:var(--ink);color:#fff;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .layout{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+  .sidebar{width:300px;flex-shrink:0;}
+  .main{flex:1;min-width:520px;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-bottom:4px;}
+  .field .readout{font-variant-numeric:tabular-nums;font-weight:700;}
+  input[type=range]{width:100%;height:24px;accent-color:var(--ink);cursor:pointer;}
+  input[type=number], input[type=text]{width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:14px;}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:2px;}
+
+  canvas.stage{border-radius:8px;border:1px solid var(--border2);display:block;max-width:100%;background:#fff;}
+  canvas.grid-canvas{image-rendering:pixelated;image-rendering:crisp-edges;}
+  .stepline{font-size:14px;color:var(--muted);margin-top:8px;}
+  .status-line{font-size:13px;color:var(--accent);font-weight:700;margin-top:6px;min-height:18px;white-space:pre-line;}
+  .info-line{font-size:12.5px;color:var(--muted);margin-top:6px;white-space:pre-line;}
+
+  footer{margin-top:26px;font-size:12.5px;color:var(--muted);}
+
+  .home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-top:16px;}
+  .home-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;}
+  .home-card h3{margin:0;font-size:18px;}
+  .home-card p{margin:0;color:var(--muted);font-size:14px;flex:1;}
+  .home-card .ref{font-size:12px;color:var(--muted);font-style:italic;}
+  .backbtn{margin-bottom:14px;}
+  .sectiontitle{font-size:22px;margin:0 0 4px;}
+  .sectionsub{color:var(--muted);font-size:14px;margin-bottom:16px;}
+  iframe.ssfframe{width:100%;height:1400px;border:1px solid var(--border);border-radius:12px;background:#fff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Spatial Ecology &amp; Evolutionary Dynamics — Interactive Course</h1>
+    <div class="sub">Click-through simulations for teaching. Adjust parameters, press play, watch the dynamics.</div>
+  </header>
+
+  <!-- ================= HOME ================= -->
+  <div class="panel active" id="panelHome">
+    <div class="card">
+      <p style="margin:0;color:var(--muted)">Seven interactive simulations of classic models in spatial ecology and evolutionary game theory, all running locally in your browser — no installation needed. Pick a demo below.</p>
+    </div>
+    <div class="home-grid">
+      <div class="home-card">
+        <h3>🌱 Plant competition</h3>
+        <p>A birth-death process with density-dependent competition among individuals in continuous space. Toggle between Gaussian and top-hat competition kernels and watch clustering vs. regularity emerge.</p>
+        <div class="ref">Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025)</div>
+        <button class="btn primary" data-target="panelPlant">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>🦠 Contact process (1D)</h3>
+        <p>The classic birth-death interacting particle system on a ring of sites. Tune the birth probability p across the critical point p_c ≈ 0.6494 and watch the population survive or die out.</p>
+        <div class="ref">Classic interacting-particle-system model</div>
+        <button class="btn primary" data-target="panelCP1D">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>☠️ Colicin allelopathy</h3>
+        <p>Producer vs. sensitive cells on a lattice. Producers poison their neighbors — watch clumps of producers take over, or lose, depending on toxicity.</p>
+        <div class="ref">Durrett &amp; Levin, J. theor. Biol. 185 (1997)</div>
+        <button class="btn primary" data-target="panelColicin">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>🪨📄✂️ Mobility &amp; biodiversity</h3>
+        <p>Spatial rock-paper-scissors with selection, reproduction, and mobility (exchange). Cross the critical mobility and watch spiral waves collapse into a single surviving species.</p>
+        <div class="ref">Reichenbach, Mobilia &amp; Frey, Nature 448 (2007)</div>
+        <button class="btn primary" data-target="panelRPS">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>🧫 Local vs. global dispersal</h3>
+        <p>The E. coli C-S-R rock-paper-scissors game. Flip between local (Moore neighborhood) and well-mixed interaction and see biodiversity collapse under global dispersal.</p>
+        <div class="ref">Kerr, Riley, Feldman &amp; Bohannan, Nature 418 (2002)</div>
+        <button class="btn primary" data-target="panelCSR">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>🦏 Step-selection functions</h3>
+        <p>Simulate an animal's movement through habitat, then try to recover its hidden habitat-preference weights from the simulated steps.</p>
+        <div class="ref">Step-Selection Functions for Modeling Animal Movement</div>
+        <button class="btn primary" data-target="panelSSF">Open</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PLANT COMMUNITY ================= -->
+  <div class="panel" id="panelPlant">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Plant community competition</h2>
+    <div class="sectionsub">Exact continuous-time spatial birth-death individual-based model (Gillespie SSA), periodic domain. Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025), Section 2.1.</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field">
+            <label>Competition kernel</label>
+            <div class="toggle-group" id="plantKernelToggle" style="width:100%;display:flex;">
+              <button data-kernel="gaussian" class="active" style="flex:1;">Gaussian</button>
+              <button data-kernel="tophat" style="flex:1;">Top-hat</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>b (birth rate) <span class="readout" id="plantBVal">3.05</span></label>
+            <input type="number" id="plantB" value="3.05" step="0.05">
+          </div>
+          <div class="field">
+            <label>d (death rate) <span class="readout" id="plantDVal">0.305</span></label>
+            <input type="number" id="plantD" value="0.305" step="0.01">
+          </div>
+          <div class="field">
+            <label>g (competition strength) <span class="readout" id="plantGVal">1.0</span></label>
+            <input type="number" id="plantG" value="1.0" step="0.1">
+          </div>
+          <div class="field">
+            <label>r_c (competition range) <span class="readout" id="plantRcVal">2.00</span></label>
+            <input type="range" id="plantRc" min="0.01" max="4" step="0.01" value="2.0">
+          </div>
+          <div class="field">
+            <label>s (dispersal range) <span class="readout" id="plantSVal">0.30</span></label>
+            <input type="range" id="plantS" min="0.01" max="1.25" step="0.01" value="0.3">
+          </div>
+          <button class="btn primary" id="plantStart" style="width:100%;margin-bottom:8px;">&#9654; Start</button>
+          <button class="btn" id="plantReset" style="width:100%;margin-bottom:8px;">Reset</button>
+          <button class="btn" id="plantCorr" style="width:100%;">Pair correlation C(r)</button>
+          <div class="hint" style="margin-top:10px;">N_h = (b−d)/g·L² is the non-spatial (mean-field) equilibrium prediction, shown as the dashed red line.</div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <canvas class="stage" id="plantCanvas" width="500" height="500"></canvas>
+          <div class="stepline" id="plantCount">Plants: 0</div>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">Total population vs. time</h3>
+          <canvas class="stage chart-canvas" id="plantChart" width="700" height="260"></canvas>
+        </div>
+        <div class="card" id="plantCorrCard" style="display:none;">
+          <h3 style="margin:0 0 8px;font-size:15px;">Pair correlation function C(r)</h3>
+          <div class="hint" style="margin-bottom:8px;">C(r) = 1 for a fully random pattern; C(r) &gt; 1 at small r indicates clustering, C(r) &lt; 1 indicates regularity/self-thinning.</div>
+          <canvas class="stage chart-canvas" id="plantCorrChart" width="700" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CONTACT PROCESS 1D ================= -->
+  <div class="panel" id="panelCP1D">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">1D contact process</h2>
+    <div class="sectionsub">Event-driven birth-death process on a ring of N sites. Critical point p_c ≈ 0.6494 (large N): below it the population always dies out, above it it can survive indefinitely.</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field">
+            <label>birth probability p <span class="readout" id="cpPVal">0.850</span></label>
+            <input type="range" id="cpP" min="0" max="1" step="0.001" value="0.85">
+          </div>
+          <div class="field">
+            <label>N (number of sites) <span class="readout" id="cpNVal">300</span></label>
+            <input type="range" id="cpN" min="50" max="600" step="10" value="300">
+          </div>
+          <div class="field">
+            <label>initial density ρ₀ <span class="readout" id="cpRho0Val">0.35</span></label>
+            <input type="range" id="cpRho0" min="0.01" max="1" step="0.01" value="0.35">
+          </div>
+          <div class="field">
+            <label>sweeps / frame <span class="readout" id="cpSpeedVal">1</span></label>
+            <input type="range" id="cpSpeed" min="1" max="20" step="1" value="1">
+          </div>
+          <button class="btn primary" id="cpPause" style="width:100%;margin-bottom:8px;">Pause</button>
+          <button class="btn" id="cpReset" style="width:100%;">Reset</button>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <div class="status-line" id="cpStatus"></div>
+          <h3 style="margin:10px 0 6px;font-size:15px;">Occupied fraction ρ(t) vs. sweep</h3>
+          <canvas class="stage chart-canvas" id="cpChart" width="700" height="200"></canvas>
+          <h3 style="margin:14px 0 6px;font-size:15px;">Space-time raster (newest at top)</h3>
+          <canvas class="stage grid-canvas" id="cpRaster" width="700" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= COLICIN ================= -->
+  <div class="panel" id="panelColicin">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Colicin allelopathy lattice model</h2>
+    <div class="sectionsub">RED = colicin producer &nbsp; BLUE = sensitive (non-producer) &nbsp; white = vacant. Durrett &amp; Levin, J. theor. Biol. 185 (1997).</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>b1 (producer birth) <span class="readout" id="coliB1Val">3.0</span></label><input type="range" id="coliB1" min="0" max="8" step="0.1" value="3.0"></div>
+          <div class="field"><label>b2 (sensitive birth) <span class="readout" id="coliB2Val">4.0</span></label><input type="range" id="coliB2" min="0" max="8" step="0.1" value="4.0"></div>
+          <div class="field"><label>d1 (producer death) <span class="readout" id="coliD1Val">1.0</span></label><input type="range" id="coliD1" min="0" max="4" step="0.1" value="1.0"></div>
+          <div class="field"><label>d2 (sensitive death) <span class="readout" id="coliD2Val">1.0</span></label><input type="range" id="coliD2" min="0" max="4" step="0.1" value="1.0"></div>
+          <div class="field"><label>gamma (colicin toxicity) <span class="readout" id="coliGammaVal">3.0</span></label><input type="range" id="coliGamma" min="0" max="8" step="0.1" value="3.0"></div>
+          <div class="field"><label>dt (time step) <span class="readout" id="coliDtVal">0.05</span></label><input type="range" id="coliDt" min="0.005" max="0.2" step="0.005" value="0.05"></div>
+          <div class="field"><label>steps / frame <span class="readout" id="coliSpeedVal">1</span></label><input type="range" id="coliSpeed" min="1" max="20" step="1" value="1"></div>
+          <div class="field"><label>init density (producers) <span class="readout" id="coliP1Val">0.01</span></label><input type="range" id="coliP1" min="0" max="1" step="0.01" value="0.01"></div>
+          <div class="field"><label>init density (sensitive) <span class="readout" id="coliP2Val">0.50</span></label><input type="range" id="coliP2" min="0" max="1" step="0.01" value="0.50"></div>
+          <div class="field"><label>grid size (on reset) <span class="readout" id="coliSizeVal">100</span></label><input type="range" id="coliSize" min="20" max="200" step="10" value="100"></div>
+          <div class="field">
+            <label>Neighborhood</label>
+            <div class="toggle-group" id="coliNbToggle" style="width:100%;display:flex;">
+              <button data-nb="N0" class="active" style="flex:1;">4 (N0)</button>
+              <button data-nb="N1" style="flex:1;">8 (N1)</button>
+            </div>
+          </div>
+          <button class="btn primary" id="coliPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
+          <button class="btn" id="coliReset" style="width:100%;margin-bottom:8px;">Reset</button>
+          <button class="btn small" id="coliStep" style="width:100%;">Single step</button>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <canvas class="stage grid-canvas" id="coliGrid" width="500" height="500"></canvas>
+          <div class="info-line" id="coliInfo"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">Densities vs. time</h3>
+          <canvas class="stage chart-canvas" id="coliChart" width="700" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RPS REICHENBACH ================= -->
+  <div class="panel" id="panelRPS">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Mobility &amp; biodiversity (rock-paper-scissors)</h2>
+    <div class="sectionsub">RED = A &nbsp; BLUE = B &nbsp; GOLD = C &nbsp; (A beats B beats C beats A) &nbsp; black = vacant. Reichenbach, Mobilia &amp; Frey, Nature 448 (2007).</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>sigma (selection) <span class="readout" id="rpsSigmaVal">1.0</span></label><input type="range" id="rpsSigma" min="0" max="4" step="0.1" value="1.0"></div>
+          <div class="field"><label>mu (reproduction) <span class="readout" id="rpsMuVal">1.0</span></label><input type="range" id="rpsMu" min="0" max="4" step="0.1" value="1.0"></div>
+          <div class="field"><label>epsilon (exchange/mobility) <span class="readout" id="rpsEpsVal">1.0</span></label><input type="range" id="rpsEps" min="0" max="30" step="0.5" value="1.0"></div>
+          <div class="field"><label>dt (time step) <span class="readout" id="rpsDtVal">0.020</span></label><input type="range" id="rpsDt" min="0.001" max="0.05" step="0.001" value="0.02"></div>
+          <div class="field"><label>initial vacancy fraction <span class="readout" id="rpsVacVal">0.25</span></label><input type="range" id="rpsVac" min="0" max="0.9" step="0.05" value="0.25"></div>
+          <div class="field"><label>grid size (on reset) <span class="readout" id="rpsSizeVal">100</span></label><input type="range" id="rpsSize" min="20" max="200" step="2" value="100"></div>
+          <div class="field"><label>sweeps / frame <span class="readout" id="rpsSpeedVal">2</span></label><input type="range" id="rpsSpeed" min="1" max="20" step="1" value="2"></div>
+          <button class="btn primary" id="rpsPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
+          <button class="btn" id="rpsReset" style="width:100%;margin-bottom:8px;">Reset</button>
+          <button class="btn small" id="rpsStep" style="width:100%;">Single sweep</button>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <canvas class="stage grid-canvas" id="rpsGrid" width="500" height="500"></canvas>
+          <div class="info-line" id="rpsInfo"></div>
+          <div class="status-line" id="rpsStatus"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">Species densities vs. time</h3>
+          <canvas class="stage chart-canvas" id="rpsChart" width="700" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CSR KERR ================= -->
+  <div class="panel" id="panelCSR">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Local vs. global dispersal (C-S-R model)</h2>
+    <div class="sectionsub">RED = C (producer) &nbsp; BLUE = S (sensitive) &nbsp; GREEN = R (resistant) &nbsp; white = vacant. Kerr, Riley, Feldman &amp; Bohannan, Nature 418 (2002).</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>D_C (producer death) <span class="readout" id="csrDCVal">0.333</span></label><input type="range" id="csrDC" min="0" max="1" step="0.01" value="0.333"></div>
+          <div class="field"><label>D_S0 (sensitive baseline death) <span class="readout" id="csrDS0Val">0.250</span></label><input type="range" id="csrDS0" min="0" max="1" step="0.01" value="0.25"></div>
+          <div class="field"><label>D_R (resistant death) <span class="readout" id="csrDRVal">0.313</span></label><input type="range" id="csrDR" min="0" max="1" step="0.01" value="0.3125"></div>
+          <div class="field"><label>tau (colicin toxicity) <span class="readout" id="csrTauVal">0.75</span></label><input type="range" id="csrTau" min="0" max="2" step="0.05" value="0.75"></div>
+          <div class="field"><label>initial vacancy fraction <span class="readout" id="csrVacVal">0.25</span></label><input type="range" id="csrVac" min="0" max="0.9" step="0.05" value="0.25"></div>
+          <div class="field"><label>grid size (on reset) <span class="readout" id="csrSizeVal">150</span></label><input type="range" id="csrSize" min="20" max="250" step="10" value="150"></div>
+          <div class="field"><label>epochs / frame <span class="readout" id="csrSpeedVal">1</span></label><input type="range" id="csrSpeed" min="1" max="20" step="1" value="1"></div>
+          <div class="field">
+            <label>Neighborhood</label>
+            <div class="toggle-group" id="csrNbToggle" style="width:100%;display:flex;">
+              <button data-nb="local" class="active" style="flex:1;">local (8)</button>
+              <button data-nb="global" style="flex:1;">global</button>
+            </div>
+          </div>
+          <button class="btn primary" id="csrPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
+          <button class="btn" id="csrReset" style="width:100%;margin-bottom:8px;">Reset</button>
+          <button class="btn small" id="csrStep" style="width:100%;">Single epoch</button>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <canvas class="stage grid-canvas" id="csrGrid" width="500" height="500"></canvas>
+          <div class="info-line" id="csrInfo"></div>
+          <div class="status-line" id="csrStatus"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">Strain densities vs. time</h3>
+          <canvas class="stage chart-canvas" id="csrChart" width="700" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SSF (embedded, byte-identical) ================= -->
+  <div class="panel" id="panelSSF">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Step-selection function simulator</h2>
+    <div class="sectionsub">Embedded unmodified — identical to the standalone version.</div>
+    <iframe class="ssfframe" id="ssfIframe" title="Step-Selection Function Simulator"></iframe>
+  </div>
+
+  <footer>Zero external dependencies — runs fully offline. Built for teaching spatial ecology and evolutionary dynamics.</footer>
+</div>
+
+<script id="ssfSourceB64" type="text/plain">PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPHRpdGxlPlN0ZXAtU2VsZWN0aW9uIEZ1bmN0aW9uIFNpbXVsYXRvcjwvdGl0bGU+CjxzdHlsZT4KICA6cm9vdHsKICAgIC0tYmc6I2ZhZjhmMzsgLS1wYW5lbDojZmZmZmZmOyAtLWluazojMjQyMjIwOyAtLW11dGVkOiM3MzZjNjA7CiAgICAtLWdyYXNzOiMzZjkxNDI7IC0tZ3Jhc3Mtc29mdDojZTNmMGRmOwogICAgLS13YXRlcjojMmY2ZmVkOyAtLXdhdGVyLXNvZnQ6I2UyZWNmZDsKICAgIC0tdHJlZTojOGE1YTJiOyAgLS10cmVlLXNvZnQ6I2VmZTRkNjsKICAgIC0tYWNjZW50OiNkNzI2M2Q7IC0tYm9yZGVyOiNlNmUxZDY7IC0tYm9yZGVyMjojZDhkMmMzOwogIH0KICAqe2JveC1zaXppbmc6Ym9yZGVyLWJveDt9CiAgYm9keXsKICAgIG1hcmdpbjowOyBiYWNrZ3JvdW5kOnZhcigtLWJnKTsgY29sb3I6dmFyKC0taW5rKTsKICAgIGZvbnQtZmFtaWx5Oi1hcHBsZS1zeXN0ZW0sQmxpbmtNYWNTeXN0ZW1Gb250LCJTZWdvZSBVSSIsSGVsdmV0aWNhLEFyaWFsLHNhbnMtc2VyaWY7CiAgICBmb250LXNpemU6MTdweDsgbGluZS1oZWlnaHQ6MS40OwogIH0KICAud3JhcHttYXgtd2lkdGg6MTMwMHB4O21hcmdpbjowIGF1dG87cGFkZGluZzoyMnB4IDI2cHggNjBweDt9CiAgaGVhZGVyIGgxe2ZvbnQtc2l6ZToyN3B4O21hcmdpbjowIDAgM3B4O30KICBoZWFkZXIgLnN1Yntjb2xvcjp2YXIoLS1tdXRlZCk7Zm9udC1zaXplOjE1cHg7bWFyZ2luLWJvdHRvbToxOHB4O30KICAuY2FyZHtiYWNrZ3JvdW5kOnZhcigtLXBhbmVsKTtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcik7Ym9yZGVyLXJhZGl1czoxMnB4O3BhZGRpbmc6MThweCAyMHB4O21hcmdpbi1ib3R0b206MThweDt9CiAgLmxlZ2VuZHtkaXNwbGF5OmZsZXg7Z2FwOjIycHg7ZmxleC13cmFwOndyYXA7YWxpZ24taXRlbXM6Y2VudGVyO2ZvbnQtc2l6ZToxNXB4O2NvbG9yOnZhcigtLW11dGVkKTt9CiAgLmxlZ2VuZCAuZG90e2Rpc3BsYXk6aW5saW5lLWJsb2NrO3dpZHRoOjEycHg7aGVpZ2h0OjEycHg7Ym9yZGVyLXJhZGl1czozcHg7bWFyZ2luLXJpZ2h0OjZweDt2ZXJ0aWNhbC1hbGlnbjotMXB4O30KICAubGFuZHNjYXBlLXJvd3tkaXNwbGF5OmZsZXg7Z2FwOjIycHg7YWxpZ24taXRlbXM6ZmxleC1zdGFydDtmbGV4LXdyYXA6d3JhcDt9CiAgLnRodW1iLWJsb2Nre3RleHQtYWxpZ246Y2VudGVyO30KICAudGh1bWItYmxvY2sgY2FudmFze2JvcmRlci1yYWRpdXM6NnB4O2JvcmRlcjoxcHggc29saWQgdmFyKC0tYm9yZGVyMik7ZGlzcGxheTpibG9jazt9CiAgLnRodW1iLWJsb2NrIC5jYXB7Zm9udC1zaXplOjEzcHg7bWFyZ2luLXRvcDo0cHg7Y29sb3I6dmFyKC0tbXV0ZWQpO2ZvbnQtd2VpZ2h0OjYwMDt9CiAgLmJ0bnsKICAgIGZvbnQtc2l6ZToxNXB4O2ZvbnQtd2VpZ2h0OjYwMDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcjIpO2JhY2tncm91bmQ6I2ZmZjtjb2xvcjp2YXIoLS1pbmspOwogICAgcGFkZGluZzoxMHB4IDE2cHg7Ym9yZGVyLXJhZGl1czo4cHg7Y3Vyc29yOnBvaW50ZXI7dHJhbnNpdGlvbjouMTVzOwogIH0KICAuYnRuOmhvdmVye2JvcmRlci1jb2xvcjojYjhiMDljO2JhY2tncm91bmQ6I2Y2ZjNlYzt9CiAgLmJ0bjphY3RpdmV7dHJhbnNmb3JtOnRyYW5zbGF0ZVkoMXB4KTt9CiAgLmJ0bjpkaXNhYmxlZHtvcGFjaXR5Oi40NTtjdXJzb3I6ZGVmYXVsdDt9CiAgLmJ0bi5wcmltYXJ5e2JhY2tncm91bmQ6dmFyKC0taW5rKTtjb2xvcjojZmZmO2JvcmRlci1jb2xvcjp2YXIoLS1pbmspO30KICAuYnRuLnByaW1hcnk6aG92ZXJ7YmFja2dyb3VuZDojM2EzNzMzO30KICAuYnRuLnNtYWxse3BhZGRpbmc6NnB4IDEycHg7Zm9udC1zaXplOjEzcHg7fQogIC50b2dnbGUtZ3JvdXB7ZGlzcGxheTppbmxpbmUtZmxleDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcjIpO2JvcmRlci1yYWRpdXM6OHB4O292ZXJmbG93OmhpZGRlbjt9CiAgLnRvZ2dsZS1ncm91cCBidXR0b257CiAgICBib3JkZXI6bm9uZTtiYWNrZ3JvdW5kOiNmZmY7cGFkZGluZzo4cHggMTRweDtmb250LXNpemU6MTRweDtmb250LXdlaWdodDo2MDA7Y3Vyc29yOnBvaW50ZXI7Y29sb3I6dmFyKC0tbXV0ZWQpOwogICAgYm9yZGVyLXJpZ2h0OjFweCBzb2xpZCB2YXIoLS1ib3JkZXIyKTsKICB9CiAgLnRvZ2dsZS1ncm91cCBidXR0b246bGFzdC1jaGlsZHtib3JkZXItcmlnaHQ6bm9uZTt9CiAgLnRvZ2dsZS1ncm91cCBidXR0b24uYWN0aXZle2JhY2tncm91bmQ6dmFyKC0taW5rKTtjb2xvcjojZmZmO30KCiAgLnRhYnN7ZGlzcGxheTpmbGV4O2dhcDoxMHB4O21hcmdpbi1ib3R0b206MTZweDt9CiAgLnRhYmJ0bnsKICAgIGZvbnQtc2l6ZToxN3B4O2ZvbnQtd2VpZ2h0OjcwMDtwYWRkaW5nOjEycHggMjBweDtib3JkZXItcmFkaXVzOjEwcHggMTBweCAwIDA7Ym9yZGVyOjFweCBzb2xpZCB2YXIoLS1ib3JkZXIpOwogICAgYmFja2dyb3VuZDojZjFlZGUyO2NvbG9yOnZhcigtLW11dGVkKTtjdXJzb3I6cG9pbnRlcjtib3JkZXItYm90dG9tOm5vbmU7CiAgfQogIC50YWJidG4uYWN0aXZle2JhY2tncm91bmQ6dmFyKC0tcGFuZWwpO2NvbG9yOnZhcigtLWluayk7fQogIC5wYW5lbHtkaXNwbGF5Om5vbmU7fQogIC5wYW5lbC5hY3RpdmV7ZGlzcGxheTpibG9jazt9CgogIC5sYXlvdXR7ZGlzcGxheTpmbGV4O2dhcDoyMnB4O2FsaWduLWl0ZW1zOmZsZXgtc3RhcnQ7ZmxleC13cmFwOndyYXA7fQogIC5zaWRlYmFye3dpZHRoOjI4MHB4O2ZsZXgtc2hyaW5rOjA7fQogIC5tYWlue2ZsZXg6MTttaW4td2lkdGg6NTIwcHg7fQoKICAuZmllbGR7bWFyZ2luLWJvdHRvbToxNnB4O30KICAuZmllbGQgbGFiZWx7ZGlzcGxheTpmbGV4O2p1c3RpZnktY29udGVudDpzcGFjZS1iZXR3ZWVuO2ZvbnQtd2VpZ2h0OjcwMDtmb250LXNpemU6MTVweDttYXJnaW4tYm90dG9tOjRweDt9CiAgLmZpZWxkIC5yZWFkb3V0e2ZvbnQtdmFyaWFudC1udW1lcmljOnRhYnVsYXItbnVtcztmb250LXdlaWdodDo3MDA7fQogIGlucHV0W3R5cGU9cmFuZ2Vde3dpZHRoOjEwMCU7aGVpZ2h0OjI2cHg7YWNjZW50LWNvbG9yOnZhcigtLWluayk7Y3Vyc29yOnBvaW50ZXI7fQogIC5oaW50e2ZvbnQtc2l6ZToxM3B4O2NvbG9yOnZhcigtLW11dGVkKTttYXJnaW4tdG9wOjJweDt9CgogIGNhbnZhcy5zdGFnZXtib3JkZXItcmFkaXVzOjhweDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcjIpO2Rpc3BsYXk6YmxvY2s7bWF4LXdpZHRoOjEwMCU7fQogIC5iZy10b2dnbGV7bWFyZ2luLWJvdHRvbToxMHB4O30KICAuc3RlcGxpbmV7Zm9udC1zaXplOjE0cHg7Y29sb3I6dmFyKC0tbXV0ZWQpO21hcmdpbi10b3A6OHB4O30KCiAgLmNvbnNpZGVye21hcmdpbi10b3A6MTJweDt9CiAgLmNvbnNpZGVyIC5yb3d7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6OHB4O21hcmdpbi1ib3R0b206NXB4O30KICAuY29uc2lkZXIgLnRhZ3t3aWR0aDo2NHB4O2ZvbnQtc2l6ZToxMnB4O2NvbG9yOnZhcigtLW11dGVkKTtmbGV4LXNocmluazowO30KICAuY29uc2lkZXIgLnRyYWNre2ZsZXg6MTtoZWlnaHQ6MTRweDtiYWNrZ3JvdW5kOiNmMWVmZTk7Ym9yZGVyLXJhZGl1czo0cHg7cG9zaXRpb246cmVsYXRpdmU7b3ZlcmZsb3c6aGlkZGVuO30KICAuY29uc2lkZXIgLmZpbGx7cG9zaXRpb246YWJzb2x1dGU7bGVmdDowO3RvcDowO2JvdHRvbTowO2JhY2tncm91bmQ6I2I4YjA5Yztib3JkZXItcmFkaXVzOjRweDt9CiAgLmNvbnNpZGVyIC5yb3cuY2hvc2VuIC5maWxse2JhY2tncm91bmQ6dmFyKC0tYWNjZW50KTt9CiAgLmNvbnNpZGVyIC5yb3cuY2hvc2VuIC50YWd7Y29sb3I6dmFyKC0tYWNjZW50KTtmb250LXdlaWdodDo3MDA7fQoKICBkZXRhaWxzLmluZm97bWFyZ2luLXRvcDoxMnB4O2ZvbnQtc2l6ZToxNHB4O2NvbG9yOnZhcigtLW11dGVkKTt9CiAgZGV0YWlscy5pbmZvIHN1bW1hcnl7Y3Vyc29yOnBvaW50ZXI7Zm9udC13ZWlnaHQ6NzAwO2NvbG9yOnZhcigtLWluayk7fQogIGRldGFpbHMuaW5mbyBwe21hcmdpbjo4cHggMCAwO30KCiAgLmxvY2tib3h7CiAgICBib3JkZXI6MnB4IGRhc2hlZCB2YXIoLS1ib3JkZXIyKTtib3JkZXItcmFkaXVzOjhweDtwYWRkaW5nOjE0cHggMTZweDt0ZXh0LWFsaWduOmNlbnRlcjtjb2xvcjp2YXIoLS1tdXRlZCk7CiAgICBmb250LXdlaWdodDo2MDA7bWFyZ2luLWJvdHRvbToxNHB4O2JhY2tncm91bmQ6I2Y2ZjNlYzsKICB9CiAgLmxvY2tib3gub3Blbntib3JkZXItc3R5bGU6c29saWQ7YmFja2dyb3VuZDp2YXIoLS1ncmFzcy1zb2Z0KTtjb2xvcjojMmM1YzJlO30KCiAgLmNoYXJ0YmxvY2t7bWFyZ2luLXRvcDoxNnB4O30KICAuY2hhcnRibG9jayBoM3tmb250LXNpemU6MTVweDttYXJnaW46MCAwIDJweDt9CiAgLmNoYXJ0YmxvY2sgLmNhcHtmb250LXNpemU6MTNweDtjb2xvcjp2YXIoLS1tdXRlZCk7bWFyZ2luLWJvdHRvbTo4cHg7fQogIC5iYXJyb3d7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjttYXJnaW46OXB4IDA7Zm9udC1zaXplOjE1cHg7fQogIC5iYXJsYWJlbHt3aWR0aDo2NHB4O2ZvbnQtd2VpZ2h0OjcwMDtmbGV4LXNocmluazowO30KICAuYmFydHJhY2t7cG9zaXRpb246cmVsYXRpdmU7aGVpZ2h0OjI2cHg7YmFja2dyb3VuZDojZjFlZmU5O2JvcmRlci1yYWRpdXM6NXB4O2ZsZXg6MTttYXJnaW46MCAxMHB4O30KICAuYmFyemVyb3twb3NpdGlvbjphYnNvbHV0ZTtsZWZ0OjUwJTt0b3A6MDtib3R0b206MDt3aWR0aDoycHg7YmFja2dyb3VuZDojYzljMmIyO30KICAuYmFyZmlsbHtwb3NpdGlvbjphYnNvbHV0ZTt0b3A6M3B4O2JvdHRvbTozcHg7Ym9yZGVyLXJhZGl1czozcHg7dHJhbnNpdGlvbjpsZWZ0IC4ycyBlYXNlLHdpZHRoIC4ycyBlYXNlO30KICAudGlja3twb3NpdGlvbjphYnNvbHV0ZTt0b3A6LTVweDtib3R0b206LTVweDt3aWR0aDozcHg7YmFja2dyb3VuZDojMWYyOTM3O2JvcmRlci1yYWRpdXM6MnB4O30KICAuYmFydmFsdWV7d2lkdGg6NjBweDt0ZXh0LWFsaWduOnJpZ2h0O2ZvbnQtdmFyaWFudC1udW1lcmljOnRhYnVsYXItbnVtcztmb250LXNpemU6MTRweDtmbGV4LXNocmluazowO30KCiAgdGFibGUucmVzdWx0c3tib3JkZXItY29sbGFwc2U6Y29sbGFwc2U7d2lkdGg6MTAwJTttYXJnaW4tdG9wOjE0cHg7Zm9udC1zaXplOjE1cHg7fQogIHRhYmxlLnJlc3VsdHMgdGgsIHRhYmxlLnJlc3VsdHMgdGR7Ym9yZGVyOjFweCBzb2xpZCB2YXIoLS1ib3JkZXIpO3BhZGRpbmc6N3B4IDEwcHg7dGV4dC1hbGlnbjpyaWdodDt9CiAgdGFibGUucmVzdWx0cyB0aDpmaXJzdC1jaGlsZCwgdGFibGUucmVzdWx0cyB0ZDpmaXJzdC1jaGlsZHt0ZXh0LWFsaWduOmxlZnQ7fQogIHRhYmxlLnJlc3VsdHMgdGh7YmFja2dyb3VuZDojZjZmM2VjO30KCiAgZm9vdGVye21hcmdpbi10b3A6MjZweDtmb250LXNpemU6MTIuNXB4O2NvbG9yOnZhcigtLW11dGVkKTt9Cjwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CjxkaXYgY2xhc3M9IndyYXAiPgogIDxoZWFkZXI+CiAgICA8aDE+U3RlcC1TZWxlY3Rpb24gRnVuY3Rpb24gU2ltdWxhdG9yPC9oMT4KICAgIDxkaXYgY2xhc3M9InN1YiI+IDxlbT5TdGVwLVNlbGVjdGlvbiBGdW5jdGlvbnMgZm9yIE1vZGVsaW5nIEFuaW1hbCBNb3ZlbWVudCDigJQgVmlydHVhbCByaGlubzwvZW0+LCBTZWN0aW9uIDIuPC9kaXY+CiAgPC9oZWFkZXI+CgogIDxkaXYgY2xhc3M9ImNhcmQiPgogICAgPGRpdiBjbGFzcz0ibGFuZHNjYXBlLXJvdyI+CiAgICAgIDxkaXYgY2xhc3M9InRodW1iLWJsb2NrIj48Y2FudmFzIGlkPSJ0aHVtYkdyYXNzIiB3aWR0aD0iMjEwIiBoZWlnaHQ9IjEyNiI+PC9jYW52YXM+PGRpdiBjbGFzcz0iY2FwIj5HcmFzczwvZGl2PjwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJ0aHVtYi1ibG9jayI+PGNhbnZhcyBpZD0idGh1bWJXYXRlciIgd2lkdGg9IjIxMCIgaGVpZ2h0PSIxMjYiPjwvY2FudmFzPjxkaXYgY2xhc3M9ImNhcCI+V2F0ZXI8L2Rpdj48L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0idGh1bWItYmxvY2siPjxjYW52YXMgaWQ9InRodW1iVHJlZSIgd2lkdGg9IjIxMCIgaGVpZ2h0PSIxMjYiPjwvY2FudmFzPjxkaXYgY2xhc3M9ImNhcCI+VHJlZSBjb3ZlcjwvZGl2PjwvZGl2PgogICAgICA8ZGl2IHN0eWxlPSJmbGV4OjE7bWluLXdpZHRoOjE4MHB4OyI+CiAgICAgICAgPGRpdiBjbGFzcz0ibGVnZW5kIiBzdHlsZT0ibWFyZ2luLWJvdHRvbToxMHB4OyI+CiAgICAgICAgICA8c3Bhbj48c3BhbiBjbGFzcz0iZG90IiBzdHlsZT0iYmFja2dyb3VuZDp2YXIoLS1ncmFzcykiPjwvc3Bhbj5HcmFzczwvc3Bhbj4KICAgICAgICAgIDxzcGFuPjxzcGFuIGNsYXNzPSJkb3QiIHN0eWxlPSJiYWNrZ3JvdW5kOnZhcigtLXdhdGVyKSI+PC9zcGFuPldhdGVyPC9zcGFuPgogICAgICAgICAgPHNwYW4+PHNwYW4gY2xhc3M9ImRvdCIgc3R5bGU9ImJhY2tncm91bmQ6dmFyKC0tdHJlZSkiPjwvc3Bhbj5UcmVlPC9zcGFuPgogICAgICAgICAgPHNwYW4+PHNwYW4gY2xhc3M9ImRvdCIgc3R5bGU9ImJhY2tncm91bmQ6dmFyKC0tYWNjZW50KSI+PC9zcGFuPlBhdGg8L3NwYW4+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPGJ1dHRvbiBjbGFzcz0iYnRuIiBpZD0iYnRuTmV3TGFuZHNjYXBlIj4mIzEyODI1NjsgTmV3IGxhbmRzY2FwZTwvYnV0dG9uPgogICAgICAgIDxkaXYgY2xhc3M9ImhpbnQiIHN0eWxlPSJtYXJnaW4tdG9wOjhweDsiPlRocmVlIGluZGVwZW5kZW50LCBzcGF0aWFsbHktc21vb3RoIGNvdmFyaWF0ZSBzdXJmYWNlcyDigJQgbGlrZSB0aGUgZ3Jhc3MgLyB3YXRlciAvIHRyZWVzIGluIFNlY3Rpb24gMidzIHRveSBleGFtcGxlLjwvZGl2PgogICAgICA8L2Rpdj4KICAgIDwvZGl2PgogIDwvZGl2PgoKICA8ZGl2IGNsYXNzPSJ0YWJzIj4KICAgIDxidXR0b24gY2xhc3M9InRhYmJ0biBhY3RpdmUiIGlkPSJ0YWJFeHBsb3JlQnRuIj4xICZuYnNwO0V4cGxvcmU8L2J1dHRvbj4KICAgIDxidXR0b24gY2xhc3M9InRhYmJ0biIgaWQ9InRhYkNoYWxsZW5nZUJ0biI+MiAmbmJzcDtHdWVzcyB0aGUgV2VpZ2h0czwvYnV0dG9uPgogIDwvZGl2PgoKICA8IS0tID09PT09PT09PT09PT09PT09IEVYUExPUkUgUEFORUwgPT09PT09PT09PT09PT09PT0gLS0+CiAgPGRpdiBjbGFzcz0icGFuZWwgYWN0aXZlIiBpZD0icGFuZWxFeHBsb3JlIj4KICAgIDxkaXYgY2xhc3M9ImxheW91dCI+CiAgICAgIDxkaXYgY2xhc3M9InNpZGViYXIiPgogICAgICAgIDxkaXYgY2xhc3M9ImNhcmQiPgogICAgICAgICAgPGRpdiBjbGFzcz0iZmllbGQiPgogICAgICAgICAgICA8bGFiZWw+JmJldGE7IEdyYXNzIDxzcGFuIGNsYXNzPSJyZWFkb3V0IiBpZD0idmFsR3Jhc3MiIHN0eWxlPSJjb2xvcjp2YXIoLS1ncmFzcykiPjAuMDwvc3Bhbj48L2xhYmVsPgogICAgICAgICAgICA8aW5wdXQgdHlwZT0icmFuZ2UiIGlkPSJzbGlkZXJHcmFzcyIgbWluPSItMyIgbWF4PSIzIiBzdGVwPSIwLjEiIHZhbHVlPSIwIj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iZmllbGQiPgogICAgICAgICAgICA8bGFiZWw+JmJldGE7IFdhdGVyIDxzcGFuIGNsYXNzPSJyZWFkb3V0IiBpZD0idmFsV2F0ZXIiIHN0eWxlPSJjb2xvcjp2YXIoLS13YXRlcikiPjAuMDwvc3Bhbj48L2xhYmVsPgogICAgICAgICAgICA8aW5wdXQgdHlwZT0icmFuZ2UiIGlkPSJzbGlkZXJXYXRlciIgbWluPSItMyIgbWF4PSIzIiBzdGVwPSIwLjEiIHZhbHVlPSIwIj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iZmllbGQiPgogICAgICAgICAgICA8bGFiZWw+JmJldGE7IFRyZWUgPHNwYW4gY2xhc3M9InJlYWRvdXQiIGlkPSJ2YWxUcmVlIiBzdHlsZT0iY29sb3I6dmFyKC0tdHJlZSkiPjAuMDwvc3Bhbj48L2xhYmVsPgogICAgICAgICAgICA8aW5wdXQgdHlwZT0icmFuZ2UiIGlkPSJzbGlkZXJUcmVlIiBtaW49Ii0zIiBtYXg9IjMiIHN0ZXA9IjAuMSIgdmFsdWU9IjAiPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJoaW50IiBzdHlsZT0ibWFyZ2luLWJvdHRvbToxNHB4OyI+UG9zaXRpdmUgPSBhdHRyYWN0ZWQgdG8gdGhhdCBoYWJpdGF0LiBOZWdhdGl2ZSA9IGF2b2lkcyBpdC4gWmVybyA9IGluZGlmZmVyZW50LjwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iZmllbGQiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjEycHg7Ij4KICAgICAgICAgICAgPGxhYmVsIGZvcj0ic3RlcHNFeHBsb3JlSW5wdXQiPk51bWJlciBvZiBzdGVwczwvbGFiZWw+CiAgICAgICAgICAgIDxpbnB1dCB0eXBlPSJudW1iZXIiIGlkPSJzdGVwc0V4cGxvcmVJbnB1dCIgbWluPSIxIiBtYXg9IjEwMDAiIHN0ZXA9IjEiIHZhbHVlPSI0MCIgc3R5bGU9IndpZHRoOjEwMCU7cGFkZGluZzo4cHggMTBweDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcjIpO2JvcmRlci1yYWRpdXM6NnB4O2ZvbnQtc2l6ZToxNXB4OyI+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9ImhpbnQiPkNob29zZSBob3cgbWFueSBtb3ZlbWVudCBzdGVwcyB0byBzaW11bGF0ZSBpbiB0aGlzIHJ1bi48L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGJ1dHRvbiBjbGFzcz0iYnRuIHByaW1hcnkiIGlkPSJidG5SdW5FeHBsb3JlIiBzdHlsZT0id2lkdGg6MTAwJTsiPiYjOTY1NDsgUnVuIDxzcGFuIGlkPSJleHBsb3JlU3RlcHNMYWJlbCI+NDA8L3NwYW4+IHN0ZXBzPC9idXR0b24+CiAgICAgICAgICA8ZGV0YWlscyBjbGFzcz0iaW5mbyI+CiAgICAgICAgICAgIDxzdW1tYXJ5PldoYXQncyBoYXBwZW5pbmc/PC9zdW1tYXJ5PgogICAgICAgICAgICA8cD5BdCBldmVyeSBtb3ZlIHRoZSBhbmltYWwgcHJvcG9zZXMgYSBoYW5kZnVsIG9mIGNhbmRpZGF0ZSBzdGVwcyAocmFuZG9tIGxlbmd0aCAmYW1wOyB0dXJuaW5nIGFuZ2xlLCBkcmF3biBmcm9tIHJlYWxpc3RpYyBkaXN0cmlidXRpb25zKS4gRWFjaCBjYW5kaWRhdGUgZ2V0cyB3ZWlnaHQgdyh4KSA9IGV4cCgmYmV0YTsmbWlkZG90O3gpLiBPbmUgaXMgY2hvc2VuIGF0IHJhbmRvbSwgd2VpZ2h0ZWQgYnkgdGhvc2Ugc2NvcmVzIOKAlCBleGFjdGx5IHRoZSBQKFkpIGZvcm11bGEgZnJvbSBTZWN0aW9uIDIuPC9wPgogICAgICAgICAgPC9kZXRhaWxzPgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0ibWFpbiI+CiAgICAgICAgPGRpdiBjbGFzcz0iY2FyZCI+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJiZy10b2dnbGUgdG9nZ2xlLWdyb3VwIiBpZD0iYmdUb2dnbGVFeHBsb3JlIj4KICAgICAgICAgICAgPGJ1dHRvbiBkYXRhLWxheWVyPSJibGVuZCIgY2xhc3M9ImFjdGl2ZSI+QmxlbmQ8L2J1dHRvbj4KICAgICAgICAgICAgPGJ1dHRvbiBkYXRhLWxheWVyPSJncmFzcyI+R3Jhc3M8L2J1dHRvbj4KICAgICAgICAgICAgPGJ1dHRvbiBkYXRhLWxheWVyPSJ3YXRlciI+V2F0ZXI8L2J1dHRvbj4KICAgICAgICAgICAgPGJ1dHRvbiBkYXRhLWxheWVyPSJ0cmVlIj5UcmVlPC9idXR0b24+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxjYW52YXMgY2xhc3M9InN0YWdlIiBpZD0iY2FudmFzRXhwbG9yZSIgd2lkdGg9IjcwMCIgaGVpZ2h0PSI0MjAiPjwvY2FudmFzPgogICAgICAgICAgPGRpdiBjbGFzcz0ic3RlcGxpbmUiIGlkPSJzdGVwTGluZUV4cGxvcmUiPlN0ZXAgMCAvIDQwPC9kaXY+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJjb25zaWRlciIgaWQ9ImNvbnNpZGVyRXhwbG9yZSI+PC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CiAgPC9kaXY+CgogIDwhLS0gPT09PT09PT09PT09PT09PT0gQ0hBTExFTkdFIFBBTkVMID09PT09PT09PT09PT09PT09IC0tPgogIDxkaXYgY2xhc3M9InBhbmVsIiBpZD0icGFuZWxDaGFsbGVuZ2UiPgogICAgPGRpdiBjbGFzcz0ibGF5b3V0Ij4KICAgICAgPGRpdiBjbGFzcz0ic2lkZWJhciI+CiAgICAgICAgPGRpdiBjbGFzcz0iY2FyZCI+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJsb2NrYm94IiBpZD0ibG9ja2JveCI+JiMxMjgyNzQ7IFRydWUgJmJldGE7J3MgYXJlIGhpZGRlbjwvZGl2PgogICAgICAgICAgPGJ1dHRvbiBjbGFzcz0iYnRuIHByaW1hcnkiIGlkPSJidG5OZXdTZWNyZXQiIHN0eWxlPSJ3aWR0aDoxMDAlO21hcmdpbi1ib3R0b206MTBweDsiPiYjMTI3OTIyOyBOZXcgc2VjcmV0IGFuaW1hbDwvYnV0dG9uPgogICAgICAgICAgPGRpdiBjbGFzcz0iZmllbGQiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjEycHg7Ij4KICAgICAgICAgICAgPGxhYmVsIGZvcj0ic3RlcHNDaGFsbGVuZ2VJbnB1dCI+TnVtYmVyIG9mIHN0ZXBzPC9sYWJlbD4KICAgICAgICAgICAgPGlucHV0IHR5cGU9Im51bWJlciIgaWQ9InN0ZXBzQ2hhbGxlbmdlSW5wdXQiIG1pbj0iMSIgbWF4PSIyMDAwIiBzdGVwPSIxIiB2YWx1ZT0iNTAwIiBzdHlsZT0id2lkdGg6MTAwJTtwYWRkaW5nOjhweCAxMHB4O2JvcmRlcjoxcHggc29saWQgdmFyKC0tYm9yZGVyMik7Ym9yZGVyLXJhZGl1czo2cHg7Zm9udC1zaXplOjE1cHg7Ij4KICAgICAgICAgICAgPGRpdiBjbGFzcz0iaGludCI+Q2hvb3NlIGhvdyBtYW55IHN0ZXBzIHRvIHNpbXVsYXRlIGJlZm9yZSBmaXR0aW5nIHRoZSBTU0YuPC9kaXY+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxidXR0b24gY2xhc3M9ImJ0biBwcmltYXJ5IiBpZD0iYnRuUnVuQ2hhbGxlbmdlIiBzdHlsZT0id2lkdGg6MTAwJTttYXJnaW4tYm90dG9tOjE0cHg7IiBkaXNhYmxlZD4mIzk2NTQ7IFJ1biA8c3BhbiBpZD0iY2hhbGxlbmdlU3RlcHNMYWJlbCI+NTAwPC9zcGFuPiBzdGVwczwvYnV0dG9uPgogICAgICAgICAgPGRpdiBjbGFzcz0iZmllbGQiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjhweDsiPgogICAgICAgICAgICA8bGFiZWwgc3R5bGU9Im1hcmdpbi1ib3R0b206NnB4OyI+QWx0ZXJuYXRpdmVzIHBlciBzdGVwIChrKTwvbGFiZWw+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9InRvZ2dsZS1ncm91cCIgaWQ9ImtUb2dnbGUiIHN0eWxlPSJ3aWR0aDoxMDAlO2Rpc3BsYXk6ZmxleDsiPgogICAgICAgICAgICAgIDxidXR0b24gZGF0YS1rPSIyIj4yPC9idXR0b24+PGJ1dHRvbiBkYXRhLWs9IjMiPjM8L2J1dHRvbj4KICAgICAgICAgICAgICA8YnV0dG9uIGRhdGEtaz0iNSIgY2xhc3M9ImFjdGl2ZSI+NTwvYnV0dG9uPjxidXR0b24gZGF0YS1rPSI4Ij44PC9idXR0b24+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJoaW50Ij5Ib3cgbWFueSByYW5kb20gYWx0ZXJuYXRpdmUgc3RlcHMgY29tcGV0ZSBhZ2FpbnN0IHRoZSB1c2VkIG9uZSwgZWFjaCBzdGVwLjwvZGl2PgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8YnV0dG9uIGNsYXNzPSJidG4gc21hbGwiIGlkPSJidG5SZXZlYWwiIHN0eWxlPSJ3aWR0aDoxMDAlO21hcmdpbi10b3A6NnB4OyIgZGlzYWJsZWQ+JiMxMjgwNjU7IFJldmVhbCB0cnVlICZiZXRhOydzPC9idXR0b24+CiAgICAgICAgICA8ZGV0YWlscyBjbGFzcz0iaW5mbyI+CiAgICAgICAgICAgIDxzdW1tYXJ5PldoYXQncyBoYXBwZW5pbmc/PC9zdW1tYXJ5PgogICAgICAgICAgICA8cD5TYW1lIGdlbmVyYXRpdmUgbW9kZWwgYXMgdGFiIDEsIGJ1dCB0aGUgJmJldGE7J3MgYXJlIHNlY3JldC4gQWZ0ZXIgdGhlIHJ1biwgdGhlICJzdGVwcyB1c2VkIGluIG1vZGVsIiBzbGlkZXIgcmUtZml0cyBhIGNvbmRpdGlvbmFsLWxvZ2l0IG1vZGVsIHRvIGEgZ3Jvd2luZyBwcmVmaXggb2YgdGhlIHVzZWQvYXZhaWxhYmxlIHN0ZXBzIOKAlCB3YXRjaCB0aGUgZXN0aW1hdGUgc3RhYmlsaXplIGFzIG1vcmUgZGF0YSBjb21lcyBpbi48L3A+CiAgICAgICAgICA8L2RldGFpbHM+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJtYWluIj4KICAgICAgICA8ZGl2IGNsYXNzPSJjYXJkIj4KICAgICAgICAgIDxkaXYgY2xhc3M9ImJnLXRvZ2dsZSB0b2dnbGUtZ3JvdXAiIGlkPSJiZ1RvZ2dsZUNoYWxsZW5nZSI+CiAgICAgICAgICAgIDxidXR0b24gZGF0YS1sYXllcj0iYmxlbmQiIGNsYXNzPSJhY3RpdmUiPkJsZW5kPC9idXR0b24+CiAgICAgICAgICAgIDxidXR0b24gZGF0YS1sYXllcj0iZ3Jhc3MiPkdyYXNzPC9idXR0b24+CiAgICAgICAgICAgIDxidXR0b24gZGF0YS1sYXllcj0id2F0ZXIiPldhdGVyPC9idXR0b24+CiAgICAgICAgICAgIDxidXR0b24gZGF0YS1sYXllcj0idHJlZSI+VHJlZTwvYnV0dG9uPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8Y2FudmFzIGNsYXNzPSJzdGFnZSIgaWQ9ImNhbnZhc0NoYWxsZW5nZSIgd2lkdGg9IjcwMCIgaGVpZ2h0PSI0MjAiPjwvY2FudmFzPgogICAgICAgICAgPGRpdiBjbGFzcz0ic3RlcGxpbmUiIGlkPSJzdGVwTGluZUNoYWxsZW5nZSI+Q2xpY2sgIk5ldyBzZWNyZXQgYW5pbWFsIiB0byBiZWdpbi48L2Rpdj4KICAgICAgICAgIDxkaXYgY2xhc3M9ImNvbnNpZGVyIiBpZD0iY29uc2lkZXJDaGFsbGVuZ2UiPjwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImNhcmQiIGlkPSJmaXRDYXJkIiBzdHlsZT0iZGlzcGxheTpub25lOyI+CiAgICAgICAgICA8ZGl2IGNsYXNzPSJmaWVsZCI+CiAgICAgICAgICAgIDxsYWJlbD5TdGVwcyB1c2VkIGluIG1vZGVsIDxzcGFuIGNsYXNzPSJyZWFkb3V0IiBpZD0ic3RlcHNVc2VkVmFsIj4wPC9zcGFuPjwvbGFiZWw+CiAgICAgICAgICAgIDxpbnB1dCB0eXBlPSJyYW5nZSIgaWQ9InN0ZXBzU2xpZGVyIiBtaW49IjEiIG1heD0iNTAwIiBzdGVwPSIxIiB2YWx1ZT0iMSI+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxkaXYgY2xhc3M9ImNoYXJ0YmxvY2siPgogICAgICAgICAgICA8aDM+U1NGIGVzdGltYXRlICgmYmV0YTsmIzc3MDspPC9oMz4KICAgICAgICAgICAgPGRpdiBjbGFzcz0iY2FwIj5Db25kaXRpb25hbC1sb2dpdCBmaXQgdG8gdXNlZC12cy1hdmFpbGFibGUgc3RlcHMg4oCUIGNvbXBhcmVzIGVhY2ggY2hvaWNlIHRvIHdoYXQgd2FzIGFjdHVhbGx5IG9mZmVyZWQgYXQgdGhhdCBtb21lbnQuPC9kaXY+CiAgICAgICAgICAgIDxkaXYgaWQ9InNzZkNoYXJ0Ij48L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzcz0iY2hhcnRibG9jayI+CiAgICAgICAgICAgIDxoMz5OYWl2ZSBzY29yZTwvaDM+CiAgICAgICAgICAgIDxkaXYgY2xhc3M9ImNhcCI+QXZlcmFnZSBoYWJpdGF0IGF0IHZpc2l0ZWQgcG9pbnRzLCBtaW51cyB0aGUgd2hvbGUtbWFwIGF2ZXJhZ2Ug4oCUIGlnbm9yZXMgbG9jYWwgYXZhaWxhYmlsaXR5IGVudGlyZWx5LjwvZGl2PgogICAgICAgICAgICA8ZGl2IGlkPSJuYWl2ZUNoYXJ0Ij48L2Rpdj4KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBpZD0icmV2ZWFsVGFibGUiPjwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAgIDwvZGl2PgogIDwvZGl2PgoKICA8Zm9vdGVyPlplcm8gZXh0ZXJuYWwgZGVwZW5kZW5jaWVzIOKAlCBydW5zIGZ1bGx5IG9mZmxpbmUuIExhbmRzY2FwZSA9IDMgaW5kZXBlbmRlbnQgc21vb3RoIHJhbmRvbSBzdXJmYWNlczsgbW92ZW1lbnQga2VybmVsID0gR2FtbWEgc3RlcCBsZW5ndGhzICZ0aW1lczsgdm9uLU1pc2VzLWxpa2UgdHVybmluZyBhbmdsZXM7IGNob2ljZSBydWxlID0gdyh4KSA9IGV4cCgmYmV0YTsmbWlkZG90O3gpLiA8L2Zvb3Rlcj4KPC9kaXY+Cgo8c2NyaXB0PgooZnVuY3Rpb24oKXsKInVzZSBzdHJpY3QiOwoKLy8gLS0tLS0tLS0tLS0tLS0tLSBjb25zdGFudHMgLS0tLS0tLS0tLS0tLS0tLQpjb25zdCBDT0xTPTcwLCBST1dTPTQyLCBDRUxMPTEwLCBUQ0VMTD0zOwpjb25zdCBDT1Y9WwogIHtrZXk6J2dyYXNzJywgbGFiZWw6J0dyYXNzJywgY29sb3I6JyMzZjkxNDInLCByZ2I6e3I6NjMsZzoxNDUsYjo2Nn0sICBjb2Fyc2U6WzExLDhdfSwKICB7a2V5Oid3YXRlcicsIGxhYmVsOidXYXRlcicsIGNvbG9yOicjMmY2ZmVkJywgcmdiOntyOjQ3LGc6MTExLGI6MjM3fSwgY29hcnNlOls5LDddfSwKICB7a2V5Oid0cmVlJywgIGxhYmVsOidUcmVlJywgIGNvbG9yOicjOGE1YTJiJywgcmdiOntyOjEzOCxnOjkwLGI6NDN9LCAgY29hcnNlOlsxMywxMF19LApdOwpjb25zdCBNT1ZFPXtnYW1tYVNoYXBlOjIsIGdhbW1hU2NhbGU6NC4yLCBrYXBwYTozfTsKY29uc3QgQkFTRV9SR0I9e3I6MjQ1LGc6MjQwLGI6MjIyfTsKCi8vIC0tLS0tLS0tLS0tLS0tLS0gUk5HICYgbm9pc2UgLS0tLS0tLS0tLS0tLS0tLQpmdW5jdGlvbiBtdWxiZXJyeTMyKHNlZWQpewogIHJldHVybiBmdW5jdGlvbigpewogICAgc2VlZHw9MDsgc2VlZD0oc2VlZCsweDZEMkI3OUY1KXwwOwogICAgbGV0IHQ9TWF0aC5pbXVsKHNlZWReKHNlZWQ+Pj4xNSksMXxzZWVkKTsKICAgIHQ9KHQrTWF0aC5pbXVsKHReKHQ+Pj43KSw2MXx0KSledDsKICAgIHJldHVybiAoKHReKHQ+Pj4xNCkpPj4+MCkvNDI5NDk2NzI5NjsKICB9Owp9CmxldCBzZWVkQ291bnRlcj1EYXRlLm5vdygpJTEwMDAwMDA7CmZ1bmN0aW9uIG5ld1JuZygpeyBzZWVkQ291bnRlcj0oc2VlZENvdW50ZXIrMTA0NzI5KSUyMTQ3NDgzNjQ3OyByZXR1cm4gbXVsYmVycnkzMihzZWVkQ291bnRlcik7IH0KCmZ1bmN0aW9uIG1ha2VGaWVsZChjb2xzLHJvd3MsY29hcnNlQ29scyxjb2Fyc2VSb3dzLHJuZyl7CiAgY29uc3QgY29hcnNlPVtdOwogIGZvcihsZXQgaj0wO2o8PWNvYXJzZVJvd3M7aisrKXtjb25zdCByb3c9W107Zm9yKGxldCBpPTA7aTw9Y29hcnNlQ29scztpKyspcm93LnB1c2gocm5nKCkpO2NvYXJzZS5wdXNoKHJvdyk7fQogIGNvbnN0IGZpZWxkPW5ldyBGbG9hdDY0QXJyYXkoY29scypyb3dzKTsKICBsZXQgbWluPUluZmluaXR5LG1heD0tSW5maW5pdHk7CiAgZm9yKGxldCB5PTA7eTxyb3dzO3krKyl7CiAgICBjb25zdCBmeT0oeS8ocm93cy0xKSkqY29hcnNlUm93cywgeTA9TWF0aC5mbG9vcihmeSksIHkxPU1hdGgubWluKHkwKzEsY29hcnNlUm93cyksIHR5PWZ5LXkwOwogICAgZm9yKGxldCB4PTA7eDxjb2xzO3grKyl7CiAgICAgIGNvbnN0IGZ4PSh4Lyhjb2xzLTEpKSpjb2Fyc2VDb2xzLCB4MD1NYXRoLmZsb29yKGZ4KSwgeDE9TWF0aC5taW4oeDArMSxjb2Fyc2VDb2xzKSwgdHg9ZngteDA7CiAgICAgIGNvbnN0IHYwMD1jb2Fyc2VbeTBdW3gwXSwgdjEwPWNvYXJzZVt5MF1beDFdLCB2MDE9Y29hcnNlW3kxXVt4MF0sIHYxMT1jb2Fyc2VbeTFdW3gxXTsKICAgICAgY29uc3QgdjA9djAwKigxLXR4KSt2MTAqdHgsIHYxPXYwMSooMS10eCkrdjExKnR4OwogICAgICBsZXQgdj12MCooMS10eSkrdjEqdHk7CiAgICAgIHYrPShybmcoKS0wLjUpKjAuMDU7CiAgICAgIGZpZWxkW3kqY29scyt4XT12OwogICAgICBpZih2PG1pbiltaW49djsgaWYodj5tYXgpbWF4PXY7CiAgICB9CiAgfQogIGZvcihsZXQgaT0wO2k8ZmllbGQubGVuZ3RoO2krKykgZmllbGRbaV09KGZpZWxkW2ldLW1pbikvKG1heC1taW4pOwogIHJldHVybiBmaWVsZDsKfQpmdW5jdGlvbiBzYW1wbGVGaWVsZChmaWVsZCxjb2xzLHJvd3MseCx5KXsKICBjb25zdCB4aT1NYXRoLm1heCgwLE1hdGgubWluKGNvbHMtMS4wMDEseCkpLCB5aT1NYXRoLm1heCgwLE1hdGgubWluKHJvd3MtMS4wMDEseSkpOwogIGNvbnN0IHgwPU1hdGguZmxvb3IoeGkpLCB4MT14MCsxLCB0eD14aS14MCwgeTA9TWF0aC5mbG9vcih5aSksIHkxPXkwKzEsIHR5PXlpLXkwOwogIGNvbnN0IHYwMD1maWVsZFt5MCpjb2xzK3gwXSwgdjEwPWZpZWxkW3kwKmNvbHMrTWF0aC5taW4oeDEsY29scy0xKV07CiAgY29uc3QgdjAxPWZpZWxkW01hdGgubWluKHkxLHJvd3MtMSkqY29scyt4MF0sIHYxMT1maWVsZFtNYXRoLm1pbih5MSxyb3dzLTEpKmNvbHMrTWF0aC5taW4oeDEsY29scy0xKV07CiAgY29uc3QgdjA9djAwKigxLXR4KSt2MTAqdHgsIHYxPXYwMSooMS10eCkrdjExKnR4OwogIHJldHVybiB2MCooMS10eSkrdjEqdHk7Cn0KZnVuY3Rpb24gZmllbGRNZWFuKGZpZWxkKXtsZXQgcz0wO2ZvcihsZXQgaT0wO2k8ZmllbGQubGVuZ3RoO2krKylzKz1maWVsZFtpXTtyZXR1cm4gcy9maWVsZC5sZW5ndGg7fQoKLy8gLS0tLS0tLS0tLS0tLS0tLSBtb3ZlbWVudCBrZXJuZWwgLS0tLS0tLS0tLS0tLS0tLQpmdW5jdGlvbiBzYW1wbGVHYW1tYShrLHRoZXRhLHJuZyl7CiAgaWYoazwxKXtjb25zdCB1PXJuZygpOyByZXR1cm4gc2FtcGxlR2FtbWEoaysxLHRoZXRhLHJuZykqTWF0aC5wb3codSwxL2spO30KICBjb25zdCBkPWstMS8zLCBjPTEvTWF0aC5zcXJ0KDkqZCk7CiAgd2hpbGUodHJ1ZSl7CiAgICBsZXQgeCx2OwogICAgZG97CiAgICAgIGNvbnN0IHUxPXJuZygpLCB1Mj1ybmcoKTsKICAgICAgeD1NYXRoLnNxcnQoLTIqTWF0aC5sb2codTEpKSpNYXRoLmNvcygyKk1hdGguUEkqdTIpOwogICAgICB2PTErYyp4OwogICAgfXdoaWxlKHY8PTApOwogICAgdj12KnYqdjsKICAgIGNvbnN0IHU9cm5nKCk7CiAgICBpZih1PDEtMC4wMzMxKngqeCp4KngpIHJldHVybiBkKnYqdGhldGE7CiAgICBpZihNYXRoLmxvZyh1KTwwLjUqeCp4K2QqKDEtditNYXRoLmxvZyh2KSkpIHJldHVybiBkKnYqdGhldGE7CiAgfQp9CmZ1bmN0aW9uIHNhbXBsZVR1cm5BbmdsZShrYXBwYSxybmcpewogIGNvbnN0IHNpZ21hPTEvTWF0aC5zcXJ0KGthcHBhKTsKICBjb25zdCB1MT1ybmcoKSwgdTI9cm5nKCk7CiAgY29uc3Qgej1NYXRoLnNxcnQoLTIqTWF0aC5sb2codTEpKSpNYXRoLmNvcygyKk1hdGguUEkqdTIpOwogIGxldCBhPXoqc2lnbWE7CiAgd2hpbGUoYT5NYXRoLlBJKWEtPTIqTWF0aC5QSTsKICB3aGlsZShhPC1NYXRoLlBJKWErPTIqTWF0aC5QSTsKICByZXR1cm4gYTsKfQpmdW5jdGlvbiBwcm9wb3NlQ2FuZGlkYXRlcyhmaWVsZHMseCx5LGhlYWRpbmcsayxybmcpewogIGNvbnN0IGNhbmRzPVtdOwogIGZvcihsZXQgaT0wO2k8aztpKyspewogICAgbGV0IEwsZHRoZXRhLG54LG55LGgsdHJpZXM9MDsKICAgIGRvewogICAgICBMPXNhbXBsZUdhbW1hKE1PVkUuZ2FtbWFTaGFwZSxNT1ZFLmdhbW1hU2NhbGUscm5nKTsKICAgICAgZHRoZXRhPXNhbXBsZVR1cm5BbmdsZShNT1ZFLmthcHBhLHJuZyk7CiAgICAgIGg9aGVhZGluZytkdGhldGE7CiAgICAgIG54PXgrTCpNYXRoLmNvcyhoKTsgbnk9eStMKk1hdGguc2luKGgpOwogICAgICB0cmllcysrOwogICAgfXdoaWxlKChueDwwfHxueD49Q09MU3x8bnk8MHx8bnk+PVJPV1MpJiZ0cmllczwyMCk7CiAgICBueD1NYXRoLm1heCgwLE1hdGgubWluKENPTFMtMWUtNixueCkpOwogICAgbnk9TWF0aC5tYXgoMCxNYXRoLm1pbihST1dTLTFlLTYsbnkpKTsKICAgIGNvbnN0IGNvdj1maWVsZHMubWFwKGY9PnNhbXBsZUZpZWxkKGYsQ09MUyxST1dTLG54LG55KSk7CiAgICBjYW5kcy5wdXNoKHt4Om54LHk6bnksaGVhZGluZzpoLGNvdn0pOwogIH0KICByZXR1cm4gY2FuZHM7Cn0KZnVuY3Rpb24gc29mdG1heChzY29yZXMpewogIGNvbnN0IG09TWF0aC5tYXgoLi4uc2NvcmVzKTsKICBjb25zdCB3PXNjb3Jlcy5tYXAocz0+TWF0aC5leHAocy1tKSk7CiAgY29uc3Qgc3VtPXcucmVkdWNlKChhLGIpPT5hK2IsMCk7CiAgcmV0dXJuIHcubWFwKHdpPT53aS9zdW0pOwp9CmZ1bmN0aW9uIGNob29zZUluZGV4KHByb2JzLHJuZyl7CiAgbGV0IHI9cm5nKCksYWNjPTA7CiAgZm9yKGxldCBpPTA7aTxwcm9icy5sZW5ndGg7aSsrKXthY2MrPXByb2JzW2ldOyBpZihyPD1hY2MpIHJldHVybiBpO30KICByZXR1cm4gcHJvYnMubGVuZ3RoLTE7Cn0KCi8vIC0tLS0tLS0tLS0tLS0tLS0gY29uZGl0aW9uYWwtbG9naXQgZml0IC0tLS0tLS0tLS0tLS0tLS0KZnVuY3Rpb24gZml0Q29uZGl0aW9uYWxMb2dpdChzdHJhdGEsbkNvdix7bHI9MC4yLGl0ZXJzPTQwMCxpbml0PW51bGx9PXt9KXsKICBsZXQgYmV0YT1pbml0P2luaXQuc2xpY2UoKTpuZXcgQXJyYXkobkNvdikuZmlsbCgwKTsKICBpZihzdHJhdGEubGVuZ3RoPT09MCkgcmV0dXJuIGJldGE7CiAgZm9yKGxldCBpdD0wO2l0PGl0ZXJzO2l0KyspewogICAgY29uc3QgZ3JhZD1uZXcgQXJyYXkobkNvdikuZmlsbCgwKTsKICAgIGZvcihjb25zdCBzIG9mIHN0cmF0YSl7CiAgICAgIGNvbnN0IHNjb3Jlcz1zLm9wdGlvbnMubWFwKG89PmJldGEucmVkdWNlKChhLGIsaWR4KT0+YStiKm9baWR4XSwwKSk7CiAgICAgIGNvbnN0IHByb2JzPXNvZnRtYXgoc2NvcmVzKTsKICAgICAgZm9yKGxldCBqPTA7ajxuQ292O2orKyl7CiAgICAgICAgZ3JhZFtqXSs9cy5vcHRpb25zW3MuY2hvc2VuSW5kZXhdW2pdOwogICAgICAgIGZvcihsZXQgaT0wO2k8cy5vcHRpb25zLmxlbmd0aDtpKyspIGdyYWRbal0tPXByb2JzW2ldKnMub3B0aW9uc1tpXVtqXTsKICAgICAgfQogICAgfQogICAgZm9yKGxldCBqPTA7ajxuQ292O2orKyl7CiAgICAgIGJldGFbal0rPWxyKihncmFkW2pdL3N0cmF0YS5sZW5ndGgpOwogICAgICBiZXRhW2pdPU1hdGgubWF4KC05LE1hdGgubWluKDksYmV0YVtqXSkpOwogICAgfQogIH0KICByZXR1cm4gYmV0YTsKfQoKLy8gLS0tLS0tLS0tLS0tLS0tLSBkcmF3aW5nIGhlbHBlcnMgLS0tLS0tLS0tLS0tLS0tLQpmdW5jdGlvbiBzZXR1cENhbnZhcyhjYW52YXMsY3NzVyxjc3NIKXsKICBjb25zdCBkcHI9d2luZG93LmRldmljZVBpeGVsUmF0aW98fDE7CiAgY2FudmFzLndpZHRoPWNzc1cqZHByOyBjYW52YXMuaGVpZ2h0PWNzc0gqZHByOwogIGNhbnZhcy5zdHlsZS53aWR0aD1jc3NXKydweCc7IGNhbnZhcy5zdHlsZS5oZWlnaHQ9Y3NzSCsncHgnOwogIGNvbnN0IGN0eD1jYW52YXMuZ2V0Q29udGV4dCgnMmQnKTsKICBjdHguc2V0VHJhbnNmb3JtKGRwciwwLDAsZHByLDAsMCk7CiAgcmV0dXJuIGN0eDsKfQpmdW5jdGlvbiBsZXJwQ2hhbm5lbChhLGIsdCl7cmV0dXJuIE1hdGgucm91bmQoYSsoYi1hKSp0KTt9CmZ1bmN0aW9uIGRyYXdMYXllcihjdHgsY2VsbCxsYXllck5hbWUsZmllbGRzKXsKICBjb25zdCB3PUNPTFMqY2VsbCwgaD1ST1dTKmNlbGw7CiAgY3R4LmNsZWFyUmVjdCgwLDAsdyxoKTsKICBpZihsYXllck5hbWU9PT0nYmxlbmQnKXsKICAgIGZvcihsZXQgeT0wO3k8Uk9XUzt5KyspewogICAgICBmb3IobGV0IHg9MDt4PENPTFM7eCsrKXsKICAgICAgICBjb25zdCBnPWZpZWxkc1swXVt5KkNPTFMreF0sIHd2PWZpZWxkc1sxXVt5KkNPTFMreF0sIHQ9ZmllbGRzWzJdW3kqQ09MUyt4XTsKICAgICAgICBjb25zdCB3c3VtPTErZyt3dit0OwogICAgICAgIGNvbnN0IHI9KEJBU0VfUkdCLnIrQ09WWzBdLnJnYi5yKmcrQ09WWzFdLnJnYi5yKnd2K0NPVlsyXS5yZ2Iucip0KS93c3VtOwogICAgICAgIGNvbnN0IGdjPShCQVNFX1JHQi5nK0NPVlswXS5yZ2IuZypnK0NPVlsxXS5yZ2IuZyp3ditDT1ZbMl0ucmdiLmcqdCkvd3N1bTsKICAgICAgICBjb25zdCBiYz0oQkFTRV9SR0IuYitDT1ZbMF0ucmdiLmIqZytDT1ZbMV0ucmdiLmIqd3YrQ09WWzJdLnJnYi5iKnQpL3dzdW07CiAgICAgICAgY3R4LmZpbGxTdHlsZT1gcmdiKCR7cnwwfSwke2djfDB9LCR7YmN8MH0pYDsKICAgICAgICBjdHguZmlsbFJlY3QoeCpjZWxsLHkqY2VsbCxjZWxsKzAuNixjZWxsKzAuNik7CiAgICAgIH0KICAgIH0KICB9IGVsc2UgewogICAgY29uc3QgaWR4PUNPVi5maW5kSW5kZXgoYz0+Yy5rZXk9PT1sYXllck5hbWUpOwogICAgY29uc3QgZmllbGQ9ZmllbGRzW2lkeF0sIHJnYj1DT1ZbaWR4XS5yZ2I7CiAgICBmb3IobGV0IHk9MDt5PFJPV1M7eSsrKXsKICAgICAgZm9yKGxldCB4PTA7eDxDT0xTO3grKyl7CiAgICAgICAgY29uc3Qgdj1NYXRoLnBvdyhmaWVsZFt5KkNPTFMreF0sMC44NSk7CiAgICAgICAgY29uc3Qgcj1sZXJwQ2hhbm5lbChCQVNFX1JHQi5yLHJnYi5yLHYpLCBnPWxlcnBDaGFubmVsKEJBU0VfUkdCLmcscmdiLmcsdiksIGI9bGVycENoYW5uZWwoQkFTRV9SR0IuYixyZ2IuYix2KTsKICAgICAgICBjdHguZmlsbFN0eWxlPWByZ2IoJHtyfSwke2d9LCR7Yn0pYDsKICAgICAgICBjdHguZmlsbFJlY3QoeCpjZWxsLHkqY2VsbCxjZWxsKzAuNixjZWxsKzAuNik7CiAgICAgIH0KICAgIH0KICB9Cn0KZnVuY3Rpb24gZHJhd1BhdGgoY3R4LGNlbGwscGF0aCl7CiAgaWYocGF0aC5sZW5ndGg8Mil7CiAgICBpZihwYXRoLmxlbmd0aD09PTEpIGRyYXdEb3QoY3R4LGNlbGwscGF0aFswXSk7CiAgICByZXR1cm47CiAgfQogIGN0eC5iZWdpblBhdGgoKTsKICBjdHgubW92ZVRvKHBhdGhbMF0ueCpjZWxsLHBhdGhbMF0ueSpjZWxsKTsKICBmb3IobGV0IGk9MTtpPHBhdGgubGVuZ3RoO2krKykgY3R4LmxpbmVUbyhwYXRoW2ldLngqY2VsbCxwYXRoW2ldLnkqY2VsbCk7CiAgY3R4LmxpbmVKb2luPSdyb3VuZCc7IGN0eC5saW5lQ2FwPSdyb3VuZCc7CiAgY3R4LnN0cm9rZVN0eWxlPSdyZ2JhKDI1NSwyNTUsMjU1LDAuODUpJzsgY3R4LmxpbmVXaWR0aD01LjU7IGN0eC5zdHJva2UoKTsKICBjdHguc3Ryb2tlU3R5bGU9JyNkNzI2M2QnOyBjdHgubGluZVdpZHRoPTIuNjsgY3R4LnN0cm9rZSgpOwogIGRyYXdEb3QoY3R4LGNlbGwscGF0aFtwYXRoLmxlbmd0aC0xXSk7CiAgLy8gc3RhcnQgbWFya2VyCiAgY3R4LmJlZ2luUGF0aCgpOyBjdHguYXJjKHBhdGhbMF0ueCpjZWxsLHBhdGhbMF0ueSpjZWxsLDQsMCw3KTsgY3R4LmZpbGxTdHlsZT0nIzFmMjkzNyc7IGN0eC5maWxsKCk7Cn0KZnVuY3Rpb24gZHJhd0RvdChjdHgsY2VsbCxwKXsKICBjdHguYmVnaW5QYXRoKCk7IGN0eC5hcmMocC54KmNlbGwscC55KmNlbGwsNiwwLDcpOwogIGN0eC5maWxsU3R5bGU9JyNkNzI2M2QnOyBjdHguZmlsbCgpOwogIGN0eC5saW5lV2lkdGg9MjsgY3R4LnN0cm9rZVN0eWxlPScjZmZmJzsgY3R4LnN0cm9rZSgpOwp9CmZ1bmN0aW9uIGRyYXdHaG9zdChjdHgsY2VsbCxwYXRoKXsKICBpZihwYXRoLmxlbmd0aDwyKSByZXR1cm47CiAgY3R4LmJlZ2luUGF0aCgpOwogIGN0eC5tb3ZlVG8ocGF0aFswXS54KmNlbGwscGF0aFswXS55KmNlbGwpOwogIGZvcihsZXQgaT0xO2k8cGF0aC5sZW5ndGg7aSsrKSBjdHgubGluZVRvKHBhdGhbaV0ueCpjZWxsLHBhdGhbaV0ueSpjZWxsKTsKICBjdHgubGluZUpvaW49J3JvdW5kJzsgY3R4LmxpbmVDYXA9J3JvdW5kJzsKICBjdHguc3Ryb2tlU3R5bGU9J3JnYmEoMTIwLDExMCw5NSwwLjQ1KSc7IGN0eC5saW5lV2lkdGg9MjsgY3R4LnNldExpbmVEYXNoKFs0LDRdKTsgY3R4LnN0cm9rZSgpOyBjdHguc2V0TGluZURhc2goW10pOwp9CmZ1bmN0aW9uIGRyYXdSYXlzKGN0eCxjZWxsLGZyb20sY2FuZGlkYXRlcyxwcm9icyl7CiAgY2FuZGlkYXRlcy5mb3JFYWNoKChjLGkpPT57CiAgICBjb25zdCBwPXByb2JzW2ldOwogICAgY3R4LmJlZ2luUGF0aCgpOwogICAgY3R4Lm1vdmVUbyhmcm9tLngqY2VsbCxmcm9tLnkqY2VsbCk7CiAgICBjdHgubGluZVRvKGMueCpjZWxsLGMueSpjZWxsKTsKICAgIGN0eC5saW5lV2lkdGg9MStwKjk7CiAgICBjdHguc3Ryb2tlU3R5bGU9YHJnYmEoMzAsMjgsMjUsJHswLjE1K3AqMC41NX0pYDsKICAgIGN0eC5zdHJva2UoKTsKICAgIGN0eC5iZWdpblBhdGgoKTsgY3R4LmFyYyhjLngqY2VsbCxjLnkqY2VsbCwyLjUrcCo1LDAsNyk7CiAgICBjdHguZmlsbFN0eWxlPWByZ2JhKDMwLDI4LDI1LCR7MC4zK3AqMC41fSlgOyBjdHguZmlsbCgpOwogIH0pOwp9CgpmdW5jdGlvbiBzbGVlcChtcyl7cmV0dXJuIG5ldyBQcm9taXNlKHI9PnNldFRpbWVvdXQocixtcykpO30KCi8vIC0tLS0tLS0tLS0tLS0tLS0gc2hhcmVkIGxhbmRzY2FwZSBzdGF0ZSAtLS0tLS0tLS0tLS0tLS0tCmxldCBmaWVsZHM9W10sIGxhbmRzY2FwZU1lYW5zPVtdOwpmdW5jdGlvbiByZWdlbmVyYXRlTGFuZHNjYXBlKCl7CiAgY29uc3Qgcm5nPW5ld1JuZygpOwogIGZpZWxkcz1DT1YubWFwKGM9Pm1ha2VGaWVsZChDT0xTLFJPV1MsYy5jb2Fyc2VbMF0sYy5jb2Fyc2VbMV0scm5nKSk7CiAgbGFuZHNjYXBlTWVhbnM9ZmllbGRzLm1hcChmaWVsZE1lYW4pOwogIGNvbnN0IHRnPXNldHVwQ2FudmFzKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCd0aHVtYkdyYXNzJyksMjEwLDEyNik7CiAgY29uc3QgdHc9c2V0dXBDYW52YXMoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RodW1iV2F0ZXInKSwyMTAsMTI2KTsKICBjb25zdCB0dD1zZXR1cENhbnZhcyhkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgndGh1bWJUcmVlJyksMjEwLDEyNik7CiAgZHJhd1RodW1iKHRnLCdncmFzcycpOyBkcmF3VGh1bWIodHcsJ3dhdGVyJyk7IGRyYXdUaHVtYih0dCwndHJlZScpOwogIHJlZHJhd0V4cGxvcmUoKTsgcmVkcmF3Q2hhbGxlbmdlQmFja2dyb3VuZCgpOwp9CmZ1bmN0aW9uIGRyYXdUaHVtYihjdHgsbGF5ZXIpeyBkcmF3TGF5ZXIoY3R4LFRDRUxMLGxheWVyLGZpZWxkcyk7IH0KCi8vID09PT09PT09PT09PT09PT09IEVYUExPUkUgVEFCID09PT09PT09PT09PT09PT09CmNvbnN0IGV4cGxvcmVTdGF0ZT17IGxheWVyOidibGVuZCcsIHBhdGg6W10sIGdob3N0OltdLCBhbmltYXRpbmc6ZmFsc2UgfTsKY29uc3QgY2FudmFzRXhwbG9yZT1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2FudmFzRXhwbG9yZScpOwpjb25zdCBjdHhFeHBsb3JlPXNldHVwQ2FudmFzKGNhbnZhc0V4cGxvcmUsNzAwLDQyMCk7CgpmdW5jdGlvbiByZWRyYXdFeHBsb3JlKCl7CiAgZHJhd0xheWVyKGN0eEV4cGxvcmUsQ0VMTCxleHBsb3JlU3RhdGUubGF5ZXIsZmllbGRzKTsKICBkcmF3R2hvc3QoY3R4RXhwbG9yZSxDRUxMLGV4cGxvcmVTdGF0ZS5naG9zdCk7CiAgZHJhd1BhdGgoY3R4RXhwbG9yZSxDRUxMLGV4cGxvcmVTdGF0ZS5wYXRoKTsKfQpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYmdUb2dnbGVFeHBsb3JlJykuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLGU9PnsKICBjb25zdCBidG49ZS50YXJnZXQuY2xvc2VzdCgnYnV0dG9uJyk7IGlmKCFidG4pIHJldHVybjsKICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcjYmdUb2dnbGVFeHBsb3JlIGJ1dHRvbicpLmZvckVhY2goYj0+Yi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgYnRuLmNsYXNzTGlzdC5hZGQoJ2FjdGl2ZScpOwogIGV4cGxvcmVTdGF0ZS5sYXllcj1idG4uZGF0YXNldC5sYXllcjsKICByZWRyYXdFeHBsb3JlKCk7Cn0pOwoKY29uc3Qgc2xpZGVycz17CiAgZ3Jhc3M6ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NsaWRlckdyYXNzJyksCiAgd2F0ZXI6ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3NsaWRlcldhdGVyJyksCiAgdHJlZTpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2xpZGVyVHJlZScpLAp9Owpjb25zdCB2YWxFbHM9e2dyYXNzOmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCd2YWxHcmFzcycpLHdhdGVyOmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCd2YWxXYXRlcicpLHRyZWU6ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3ZhbFRyZWUnKX07CmZ1bmN0aW9uIGN1cnJlbnRFeHBsb3JlQmV0YSgpeyByZXR1cm4gW3BhcnNlRmxvYXQoc2xpZGVycy5ncmFzcy52YWx1ZSksIHBhcnNlRmxvYXQoc2xpZGVycy53YXRlci52YWx1ZSksIHBhcnNlRmxvYXQoc2xpZGVycy50cmVlLnZhbHVlKV07IH0KT2JqZWN0LmtleXMoc2xpZGVycykuZm9yRWFjaChrPT57CiAgc2xpZGVyc1trXS5hZGRFdmVudExpc3RlbmVyKCdpbnB1dCcsKCk9PnsgdmFsRWxzW2tdLnRleHRDb250ZW50PXBhcnNlRmxvYXQoc2xpZGVyc1trXS52YWx1ZSkudG9GaXhlZCgxKTsgfSk7Cn0pOwoKZnVuY3Rpb24gcmVuZGVyQ29uc2lkZXIoY29udGFpbmVySWQsY2FuZGlkYXRlcyxwcm9icyxjaG9zZW5JZHgpewogIGNvbnN0IGVsPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKGNvbnRhaW5lcklkKTsKICBlbC5pbm5lckhUTUw9Y2FuZGlkYXRlcy5tYXAoKGMsaSk9PnsKICAgIGNvbnN0IHBjdD0ocHJvYnNbaV0qMTAwKS50b0ZpeGVkKDApOwogICAgcmV0dXJuIGA8ZGl2IGNsYXNzPSJyb3cgJHtpPT09Y2hvc2VuSWR4PydjaG9zZW4nOicnfSI+PGRpdiBjbGFzcz0idGFnIj5vcHRpb24gJHtpKzF9PC9kaXY+PGRpdiBjbGFzcz0idHJhY2siPjxkaXYgY2xhc3M9ImZpbGwiIHN0eWxlPSJ3aWR0aDoke3BjdH0lIj48L2Rpdj48L2Rpdj48ZGl2IGNsYXNzPSJ0YWciIHN0eWxlPSJ3aWR0aDo0MHB4O3RleHQtYWxpZ246cmlnaHQ7Ij4ke3BjdH0lPC9kaXY+PC9kaXY+YDsKICB9KS5qb2luKCcnKTsKfQoKY29uc3Qgc3RlcHNFeHBsb3JlSW5wdXQ9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3N0ZXBzRXhwbG9yZUlucHV0Jyk7CmNvbnN0IGV4cGxvcmVTdGVwc0xhYmVsPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdleHBsb3JlU3RlcHNMYWJlbCcpOwpmdW5jdGlvbiBnZXRFeHBsb3JlU3RlcHMoKXsKICBjb25zdCBuPXBhcnNlSW50KHN0ZXBzRXhwbG9yZUlucHV0LnZhbHVlLDEwKTsKICBpZihOdW1iZXIuaXNGaW5pdGUobikmJm4+MCkgcmV0dXJuIG47CiAgcmV0dXJuIDQwOwp9CmZ1bmN0aW9uIHN5bmNFeHBsb3JlU3RlcExhYmVsKCl7CiAgZXhwbG9yZVN0ZXBzTGFiZWwudGV4dENvbnRlbnQ9Z2V0RXhwbG9yZVN0ZXBzKCk7Cn0Kc3RlcHNFeHBsb3JlSW5wdXQuYWRkRXZlbnRMaXN0ZW5lcignaW5wdXQnLCBzeW5jRXhwbG9yZVN0ZXBMYWJlbCk7CnN5bmNFeHBsb3JlU3RlcExhYmVsKCk7Cgpjb25zdCBidG5SdW5FeHBsb3JlPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5SdW5FeHBsb3JlJyk7CmJ0blJ1bkV4cGxvcmUuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCBydW5FeHBsb3JlKTsKYXN5bmMgZnVuY3Rpb24gcnVuRXhwbG9yZSgpewogIGlmKGV4cGxvcmVTdGF0ZS5hbmltYXRpbmcpIHJldHVybjsKICBleHBsb3JlU3RhdGUuYW5pbWF0aW5nPXRydWU7CiAgYnRuUnVuRXhwbG9yZS5kaXNhYmxlZD10cnVlOwogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5OZXdMYW5kc2NhcGUnKS5kaXNhYmxlZD10cnVlOwogIGNvbnN0IGJldGE9Y3VycmVudEV4cGxvcmVCZXRhKCk7CiAgY29uc3Qgcm5nPW5ld1JuZygpOwogIGV4cGxvcmVTdGF0ZS5naG9zdD1leHBsb3JlU3RhdGUucGF0aDsKICBleHBsb3JlU3RhdGUucGF0aD1bXTsKICBsZXQgeD04K3JuZygpKihDT0xTLTE2KSwgeT04K3JuZygpKihST1dTLTE2KSwgaGVhZGluZz1ybmcoKSoyKk1hdGguUEk7CiAgZXhwbG9yZVN0YXRlLnBhdGgucHVzaCh7eCx5fSk7CiAgY29uc3QgTj1nZXRFeHBsb3JlU3RlcHMoKTsKICBmb3IobGV0IHQ9MDt0PE47dCsrKXsKICAgIGNvbnN0IGNhbmRzPXByb3Bvc2VDYW5kaWRhdGVzKGZpZWxkcyx4LHksaGVhZGluZyw1LHJuZyk7CiAgICBjb25zdCBzY29yZXM9Y2FuZHMubWFwKGM9PmJldGEucmVkdWNlKChzLGIsaWR4KT0+cytiKmMuY292W2lkeF0sMCkpOwogICAgY29uc3QgcHJvYnM9c29mdG1heChzY29yZXMpOwogICAgcmVkcmF3RXhwbG9yZSgpOwogICAgZHJhd1JheXMoY3R4RXhwbG9yZSxDRUxMLHt4LHl9LGNhbmRzLHByb2JzKTsKICAgIHJlbmRlckNvbnNpZGVyKCdjb25zaWRlckV4cGxvcmUnLGNhbmRzLHByb2JzLC0xKTsKICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzdGVwTGluZUV4cGxvcmUnKS50ZXh0Q29udGVudD1gU3RlcCAke3QrMX0gLyAke059YDsKICAgIGF3YWl0IHNsZWVwKDE4MCk7CiAgICBjb25zdCBjaG9zZW49Y2hvb3NlSW5kZXgocHJvYnMscm5nKTsKICAgIHJlbmRlckNvbnNpZGVyKCdjb25zaWRlckV4cGxvcmUnLGNhbmRzLHByb2JzLGNob3Nlbik7CiAgICB4PWNhbmRzW2Nob3Nlbl0ueDsgeT1jYW5kc1tjaG9zZW5dLnk7IGhlYWRpbmc9Y2FuZHNbY2hvc2VuXS5oZWFkaW5nOwogICAgZXhwbG9yZVN0YXRlLnBhdGgucHVzaCh7eCx5fSk7CiAgICByZWRyYXdFeHBsb3JlKCk7CiAgICBhd2FpdCBzbGVlcCg3MCk7CiAgfQogIGV4cGxvcmVTdGF0ZS5hbmltYXRpbmc9ZmFsc2U7CiAgYnRuUnVuRXhwbG9yZS5kaXNhYmxlZD1mYWxzZTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYnRuTmV3TGFuZHNjYXBlJykuZGlzYWJsZWQ9ZmFsc2U7Cn0KCi8vID09PT09PT09PT09PT09PT09IENIQUxMRU5HRSBUQUIgPT09PT09PT09PT09PT09PT0KY29uc3QgY2hhbGxlbmdlU3RhdGU9ewogIGxheWVyOidibGVuZCcsIHRydWVCZXRhOm51bGwsIGhpZGRlbjp0cnVlLCBrOjUsIHBhdGg6W10sIHN0cmF0YTpbXSwgYW5pbWF0aW5nOmZhbHNlLCBsYXN0QmV0YUhhdDpbMCwwLDBdLCByZWFkeTpmYWxzZQp9Owpjb25zdCBjYW52YXNDaGFsbGVuZ2U9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2NhbnZhc0NoYWxsZW5nZScpOwpjb25zdCBjdHhDaGFsbGVuZ2U9c2V0dXBDYW52YXMoY2FudmFzQ2hhbGxlbmdlLDcwMCw0MjApOwoKZnVuY3Rpb24gcmVkcmF3Q2hhbGxlbmdlQmFja2dyb3VuZCgpewogIGRyYXdMYXllcihjdHhDaGFsbGVuZ2UsQ0VMTCxjaGFsbGVuZ2VTdGF0ZS5sYXllcixmaWVsZHMpOwogIGRyYXdQYXRoKGN0eENoYWxsZW5nZSxDRUxMLGNoYWxsZW5nZVN0YXRlLnBhdGgpOwp9CmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdiZ1RvZ2dsZUNoYWxsZW5nZScpLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJyxlPT57CiAgY29uc3QgYnRuPWUudGFyZ2V0LmNsb3Nlc3QoJ2J1dHRvbicpOyBpZighYnRuKSByZXR1cm47CiAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnI2JnVG9nZ2xlQ2hhbGxlbmdlIGJ1dHRvbicpLmZvckVhY2goYj0+Yi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgYnRuLmNsYXNzTGlzdC5hZGQoJ2FjdGl2ZScpOwogIGNoYWxsZW5nZVN0YXRlLmxheWVyPWJ0bi5kYXRhc2V0LmxheWVyOwogIHJlZHJhd0NoYWxsZW5nZUJhY2tncm91bmQoKTsKfSk7CmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdrVG9nZ2xlJykuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLGU9PnsKICBjb25zdCBidG49ZS50YXJnZXQuY2xvc2VzdCgnYnV0dG9uJyk7IGlmKCFidG4gfHwgY2hhbGxlbmdlU3RhdGUuYW5pbWF0aW5nKSByZXR1cm47CiAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnI2tUb2dnbGUgYnV0dG9uJykuZm9yRWFjaChiPT5iLmNsYXNzTGlzdC5yZW1vdmUoJ2FjdGl2ZScpKTsKICBidG4uY2xhc3NMaXN0LmFkZCgnYWN0aXZlJyk7CiAgY2hhbGxlbmdlU3RhdGUuaz1wYXJzZUludChidG4uZGF0YXNldC5rLDEwKTsKICBpZihjaGFsbGVuZ2VTdGF0ZS5yZWFkeSkgcnVuQ2hhbGxlbmdlKCk7IC8vIHJlLXJ1biB3aXRoIHNhbWUgc2VjcmV0IGJldGEgJiBsYW5kc2NhcGUKfSk7Cgpjb25zdCBidG5OZXdTZWNyZXQ9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2J0bk5ld1NlY3JldCcpOwpjb25zdCBidG5SdW5DaGFsbGVuZ2U9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2J0blJ1bkNoYWxsZW5nZScpOwpjb25zdCBidG5SZXZlYWw9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2J0blJldmVhbCcpOwpjb25zdCBsb2NrYm94PWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdsb2NrYm94Jyk7CmNvbnN0IHN0ZXBzQ2hhbGxlbmdlSW5wdXQ9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3N0ZXBzQ2hhbGxlbmdlSW5wdXQnKTsKY29uc3QgY2hhbGxlbmdlU3RlcHNMYWJlbD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2hhbGxlbmdlU3RlcHNMYWJlbCcpOwpmdW5jdGlvbiBnZXRDaGFsbGVuZ2VTdGVwcygpewogIGNvbnN0IG49cGFyc2VJbnQoc3RlcHNDaGFsbGVuZ2VJbnB1dC52YWx1ZSwxMCk7CiAgaWYoTnVtYmVyLmlzRmluaXRlKG4pJiZuPjApIHJldHVybiBuOwogIHJldHVybiA1MDA7Cn0KZnVuY3Rpb24gc3luY0NoYWxsZW5nZVN0ZXBDb250cm9scygpewogIGNvbnN0IG49Z2V0Q2hhbGxlbmdlU3RlcHMoKTsKICBjaGFsbGVuZ2VTdGVwc0xhYmVsLnRleHRDb250ZW50PW47CiAgY29uc3Qgc2xpZGVyPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzdGVwc1NsaWRlcicpOwogIHNsaWRlci5tYXg9bjsKICBpZihwYXJzZUludChzbGlkZXIudmFsdWUsMTApID4gbikgc2xpZGVyLnZhbHVlPW47CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3N0ZXBzVXNlZFZhbCcpLnRleHRDb250ZW50PXNsaWRlci52YWx1ZTsKfQpzdGVwc0NoYWxsZW5nZUlucHV0LmFkZEV2ZW50TGlzdGVuZXIoJ2lucHV0Jywgc3luY0NoYWxsZW5nZVN0ZXBDb250cm9scyk7CnN5bmNDaGFsbGVuZ2VTdGVwQ29udHJvbHMoKTsKCmJ0bk5ld1NlY3JldC5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsKCk9PnsKICBpZihjaGFsbGVuZ2VTdGF0ZS5hbmltYXRpbmcpIHJldHVybjsKICBjb25zdCBybmc9bmV3Um5nKCk7CiAgY2hhbGxlbmdlU3RhdGUudHJ1ZUJldGE9WyAocm5nKCktMC41KSo1LCAocm5nKCktMC41KSo1LCAocm5nKCktMC41KSo1IF0ubWFwKHY9Pk1hdGgucm91bmQodioxMDApLzEwMCk7CiAgY2hhbGxlbmdlU3RhdGUuaGlkZGVuPXRydWU7CiAgY2hhbGxlbmdlU3RhdGUucGF0aD1bXTsgY2hhbGxlbmdlU3RhdGUuc3RyYXRhPVtdOyBjaGFsbGVuZ2VTdGF0ZS5sYXN0QmV0YUhhdD1bMCwwLDBdOwogIGNoYWxsZW5nZVN0YXRlLnJlYWR5PWZhbHNlOwogIGxvY2tib3gudGV4dENvbnRlbnQ9J/CflJIgVHJ1ZSDOslwncyBhcmUgaGlkZGVuJzsKICBsb2NrYm94LmNsYXNzTGlzdC5yZW1vdmUoJ29wZW4nKTsKICBidG5SZXZlYWwuZGlzYWJsZWQ9dHJ1ZTsKICBidG5SdW5DaGFsbGVuZ2UuZGlzYWJsZWQ9ZmFsc2U7CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2ZpdENhcmQnKS5zdHlsZS5kaXNwbGF5PSdub25lJzsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc3RlcExpbmVDaGFsbGVuZ2UnKS50ZXh0Q29udGVudD1gU2VjcmV0IGFuaW1hbCByZWFkeS4gQ2xpY2sgIlJ1biAke2dldENoYWxsZW5nZVN0ZXBzKCl9IHN0ZXBzIi5gOwogIHJlZ2VuZXJhdGVMYW5kc2NhcGUoKTsKICByZWRyYXdDaGFsbGVuZ2VCYWNrZ3JvdW5kKCk7Cn0pOwoKYnRuUnVuQ2hhbGxlbmdlLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgcnVuQ2hhbGxlbmdlKTsKCmFzeW5jIGZ1bmN0aW9uIHJ1bkNoYWxsZW5nZSgpewogIGlmKGNoYWxsZW5nZVN0YXRlLmFuaW1hdGluZyB8fCAhY2hhbGxlbmdlU3RhdGUudHJ1ZUJldGEpIHJldHVybjsKICBjaGFsbGVuZ2VTdGF0ZS5hbmltYXRpbmc9dHJ1ZTsKICBidG5SdW5DaGFsbGVuZ2UuZGlzYWJsZWQ9dHJ1ZTsgYnRuTmV3U2VjcmV0LmRpc2FibGVkPXRydWU7IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5OZXdMYW5kc2NhcGUnKS5kaXNhYmxlZD10cnVlOwogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdrVG9nZ2xlJykucXVlcnlTZWxlY3RvckFsbCgnYnV0dG9uJykuZm9yRWFjaChiPT5iLmRpc2FibGVkPXRydWUpOwoKICBjb25zdCBybmc9bmV3Um5nKCk7CiAgY29uc3QgYmV0YT1jaGFsbGVuZ2VTdGF0ZS50cnVlQmV0YTsKICBjb25zdCBrPWNoYWxsZW5nZVN0YXRlLms7CiAgY29uc3QgTm1heD1nZXRDaGFsbGVuZ2VTdGVwcygpLCBhbmltYXRlRmlyc3Q9MjA7CiAgY2hhbGxlbmdlU3RhdGUucGF0aD1bXTsgY2hhbGxlbmdlU3RhdGUuc3RyYXRhPVtdOwogIGxldCB4PTEwK3JuZygpKihDT0xTLTIwKSwgeT0xMCtybmcoKSooUk9XUy0yMCksIGhlYWRpbmc9cm5nKCkqMipNYXRoLlBJOwogIGNoYWxsZW5nZVN0YXRlLnBhdGgucHVzaCh7eCx5fSk7CgogIGZvcihsZXQgdD0wO3Q8Tm1heDt0KyspewogICAgY29uc3QgY2FuZHM9cHJvcG9zZUNhbmRpZGF0ZXMoZmllbGRzLHgseSxoZWFkaW5nLGsscm5nKTsKICAgIGNvbnN0IHNjb3Jlcz1jYW5kcy5tYXAoYz0+YmV0YS5yZWR1Y2UoKHMsYixpZHgpPT5zK2IqYy5jb3ZbaWR4XSwwKSk7CiAgICBjb25zdCBwcm9icz1zb2Z0bWF4KHNjb3Jlcyk7CiAgICBpZih0PGFuaW1hdGVGaXJzdCl7CiAgICAgIHJlZHJhd0NoYWxsZW5nZUJhY2tncm91bmQoKTsKICAgICAgZHJhd1JheXMoY3R4Q2hhbGxlbmdlLENFTEwse3gseX0sY2FuZHMscHJvYnMpOwogICAgICByZW5kZXJDb25zaWRlcignY29uc2lkZXJDaGFsbGVuZ2UnLGNhbmRzLHByb2JzLC0xKTsKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3N0ZXBMaW5lQ2hhbGxlbmdlJykudGV4dENvbnRlbnQ9YFNpbXVsYXRpbmcuLi4gc3RlcCAke3QrMX0gLyAke05tYXh9YDsKICAgICAgYXdhaXQgc2xlZXAoMTcwKTsKICAgIH0KICAgIGNvbnN0IGNob3Nlbj1jaG9vc2VJbmRleChwcm9icyxybmcpOwogICAgaWYodDxhbmltYXRlRmlyc3QpIHJlbmRlckNvbnNpZGVyKCdjb25zaWRlckNoYWxsZW5nZScsY2FuZHMscHJvYnMsY2hvc2VuKTsKICAgIGNoYWxsZW5nZVN0YXRlLnN0cmF0YS5wdXNoKHtvcHRpb25zOmNhbmRzLm1hcChjPT5jLmNvdiksIGNob3NlbkluZGV4OmNob3Nlbn0pOwogICAgeD1jYW5kc1tjaG9zZW5dLng7IHk9Y2FuZHNbY2hvc2VuXS55OyBoZWFkaW5nPWNhbmRzW2Nob3Nlbl0uaGVhZGluZzsKICAgIGNoYWxsZW5nZVN0YXRlLnBhdGgucHVzaCh7eCx5fSk7CiAgICBpZih0PGFuaW1hdGVGaXJzdCl7IHJlZHJhd0NoYWxsZW5nZUJhY2tncm91bmQoKTsgYXdhaXQgc2xlZXAoNTApOyB9CiAgfQogIHJlZHJhd0NoYWxsZW5nZUJhY2tncm91bmQoKTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc3RlcExpbmVDaGFsbGVuZ2UnKS50ZXh0Q29udGVudD1gRG9uZSDigJQgJHtObWF4fSBzdGVwcyBzaW11bGF0ZWQgKGs9JHtrfSBhbHRlcm5hdGl2ZXMgZWFjaCkuYDsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY29uc2lkZXJDaGFsbGVuZ2UnKS5pbm5lckhUTUw9Jyc7CgogIGNoYWxsZW5nZVN0YXRlLmFuaW1hdGluZz1mYWxzZTsKICBjaGFsbGVuZ2VTdGF0ZS5yZWFkeT10cnVlOwogIGJ0bk5ld1NlY3JldC5kaXNhYmxlZD1mYWxzZTsgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2J0bk5ld0xhbmRzY2FwZScpLmRpc2FibGVkPWZhbHNlOwogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdrVG9nZ2xlJykucXVlcnlTZWxlY3RvckFsbCgnYnV0dG9uJykuZm9yRWFjaChiPT5iLmRpc2FibGVkPWZhbHNlKTsKICBidG5SZXZlYWwuZGlzYWJsZWQ9ZmFsc2U7CgogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdmaXRDYXJkJykuc3R5bGUuZGlzcGxheT0nYmxvY2snOwogIGNvbnN0IHNsaWRlcj1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc3RlcHNTbGlkZXInKTsKICBzbGlkZXIubWF4PU5tYXg7IHNsaWRlci52YWx1ZT1NYXRoLm1pbigyNSxObWF4KTsKICBzeW5jQ2hhbGxlbmdlU3RlcENvbnRyb2xzKCk7CiAgY2hhbGxlbmdlU3RhdGUubGFzdEJldGFIYXQ9WzAsMCwwXTsKICB1cGRhdGVGaXQodHJ1ZSk7Cn0KCmNvbnN0IHN0ZXBzU2xpZGVyPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzdGVwc1NsaWRlcicpOwpsZXQgZml0UGVuZGluZz1mYWxzZTsKc3RlcHNTbGlkZXIuYWRkRXZlbnRMaXN0ZW5lcignaW5wdXQnLCgpPT57IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzdGVwc1VzZWRWYWwnKS50ZXh0Q29udGVudD1zdGVwc1NsaWRlci52YWx1ZTsgdGhyb3R0bGVkRml0KCk7IH0pOwpzdGVwc1NsaWRlci5hZGRFdmVudExpc3RlbmVyKCdjaGFuZ2UnLCgpPT51cGRhdGVGaXQodHJ1ZSkpOwpmdW5jdGlvbiB0aHJvdHRsZWRGaXQoKXsKICBpZihmaXRQZW5kaW5nKSByZXR1cm47CiAgZml0UGVuZGluZz10cnVlOwogIHJlcXVlc3RBbmltYXRpb25GcmFtZSgoKT0+eyB1cGRhdGVGaXQoZmFsc2UpOyBmaXRQZW5kaW5nPWZhbHNlOyB9KTsKfQoKZnVuY3Rpb24gdXBkYXRlRml0KHJlZmluZWQpewogIGNvbnN0IG49cGFyc2VJbnQoc3RlcHNTbGlkZXIudmFsdWUsMTApOwogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzdGVwc1VzZWRWYWwnKS50ZXh0Q29udGVudD1uOwogIGNvbnN0IHN0cmF0YVN1YnNldD1jaGFsbGVuZ2VTdGF0ZS5zdHJhdGEuc2xpY2UoMCxuKTsKICBjb25zdCBiZXRhSGF0PWZpdENvbmRpdGlvbmFsTG9naXQoc3RyYXRhU3Vic2V0LDMsewogICAgbHI6cmVmaW5lZD8wLjI6MC4yNSwgaXRlcnM6cmVmaW5lZD80NTA6MTUwLCBpbml0OmNoYWxsZW5nZVN0YXRlLmxhc3RCZXRhSGF0CiAgfSk7CiAgY2hhbGxlbmdlU3RhdGUubGFzdEJldGFIYXQ9YmV0YUhhdDsKCiAgLy8gbmFpdmUgc2NvcmU6IG1lYW4gY292YXJpYXRlIGF0IHVzZWQgcG9pbnRzIChzdWJzZXQpIG1pbnVzIHdob2xlLWxhbmRzY2FwZSBtZWFuCiAgY29uc3QgbmFpdmU9WzAsMSwyXS5tYXAoaWR4PT57CiAgICBsZXQgcz0wOyBmb3IoY29uc3Qgc3Qgb2Ygc3RyYXRhU3Vic2V0KSBzKz1zdC5vcHRpb25zW3N0LmNob3NlbkluZGV4XVtpZHhdOwogICAgY29uc3QgdXNlZE1lYW49c3RyYXRhU3Vic2V0Lmxlbmd0aD8gcy9zdHJhdGFTdWJzZXQubGVuZ3RoIDogMDsKICAgIHJldHVybiB1c2VkTWVhbi1sYW5kc2NhcGVNZWFuc1tpZHhdOwogIH0pOwoKICByZW5kZXJDaGFydHMoYmV0YUhhdCxuYWl2ZSk7Cn0KCmZ1bmN0aW9uIHJlbmRlckNoYXJ0cyhiZXRhSGF0LG5haXZlKXsKICBjb25zdCBoaWRkZW49Y2hhbGxlbmdlU3RhdGUuaGlkZGVuOwogIGNvbnN0IHRydWVCZXRhPWNoYWxsZW5nZVN0YXRlLnRydWVCZXRhfHxbMCwwLDBdOwogIGNvbnN0IHNzZlNjYWxlVmFscz1iZXRhSGF0Lm1hcChNYXRoLmFicykuY29uY2F0KGhpZGRlbj9bXTp0cnVlQmV0YS5tYXAoTWF0aC5hYnMpKTsKICBjb25zdCBzc2ZTY2FsZT1NYXRoLm1heCgyLjUsIC4uLnNzZlNjYWxlVmFscykqMS4xNTsKICBjb25zdCBuYWl2ZVNjYWxlPU1hdGgubWF4KDAuMDgsIC4uLm5haXZlLm1hcChNYXRoLmFicykpKjEuMjU7CgogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzc2ZDaGFydCcpLmlubmVySFRNTD1DT1YubWFwKChjLGkpPT5iYXJSb3coYyxiZXRhSGF0W2ldLHNzZlNjYWxlLGhpZGRlbj9udWxsOnRydWVCZXRhW2ldKSkuam9pbignJyk7CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ25haXZlQ2hhcnQnKS5pbm5lckhUTUw9Q09WLm1hcCgoYyxpKT0+YmFyUm93KGMsbmFpdmVbaV0sbmFpdmVTY2FsZSxudWxsKSkuam9pbignJyk7CgogIGlmKCFoaWRkZW4pewogICAgY29uc3Qgcm93cz1DT1YubWFwKChjLGkpPT57CiAgICAgIGNvbnN0IGVycj1NYXRoLmFicyh0cnVlQmV0YVtpXS1iZXRhSGF0W2ldKTsKICAgICAgcmV0dXJuIGA8dHI+PHRkIHN0eWxlPSJjb2xvcjoke2MuY29sb3J9Ij4ke2MubGFiZWx9PC90ZD48dGQ+JHt0cnVlQmV0YVtpXS50b0ZpeGVkKDIpfTwvdGQ+PHRkPiR7YmV0YUhhdFtpXS50b0ZpeGVkKDIpfTwvdGQ+PHRkPiR7bmFpdmVbaV0udG9GaXhlZCgzKX08L3RkPjx0ZD4ke2Vyci50b0ZpeGVkKDIpfTwvdGQ+PC90cj5gOwogICAgfSkuam9pbignJyk7CiAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmV2ZWFsVGFibGUnKS5pbm5lckhUTUw9CiAgICAgIGA8dGFibGUgY2xhc3M9InJlc3VsdHMiPjx0aGVhZD48dHI+PHRoPkNvdmFyaWF0ZTwvdGg+PHRoPlRydWUgJmJldGE7PC90aD48dGg+RXN0aW1hdGVkICZiZXRhOyYjNzcwOzwvdGg+PHRoPk5haXZlIHNjb3JlPC90aD48dGg+fEVycm9yfDwvdGg+PC90cj48L3RoZWFkPjx0Ym9keT4ke3Jvd3N9PC90Ym9keT48L3RhYmxlPmA7CiAgfSBlbHNlIHsKICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyZXZlYWxUYWJsZScpLmlubmVySFRNTD0nJzsKICB9Cn0KZnVuY3Rpb24gYmFyUm93KGNvdix2YWx1ZSxzY2FsZSx0cnVlVmFsdWUpewogIGNvbnN0IHBjdD12PT5NYXRoLm1heCgwLE1hdGgubWluKDEwMCwgNTArKHYvc2NhbGUpKjUwKSk7CiAgY29uc3QgcD1wY3QodmFsdWUpOwogIGNvbnN0IGxlZnQ9dmFsdWU+PTA/NTA6cCwgd2lkdGg9TWF0aC5hYnMocC01MCk7CiAgbGV0IHRpY2s9Jyc7CiAgaWYodHJ1ZVZhbHVlIT09bnVsbCAmJiB0cnVlVmFsdWUhPT11bmRlZmluZWQpewogICAgY29uc3QgdHA9cGN0KHRydWVWYWx1ZSk7CiAgICB0aWNrPWA8ZGl2IGNsYXNzPSJ0aWNrIiBzdHlsZT0ibGVmdDoke3RwfSUiPjwvZGl2PmA7CiAgfQogIHJldHVybiBgPGRpdiBjbGFzcz0iYmFycm93Ij4KICAgIDxkaXYgY2xhc3M9ImJhcmxhYmVsIiBzdHlsZT0iY29sb3I6JHtjb3YuY29sb3J9Ij4ke2Nvdi5sYWJlbH08L2Rpdj4KICAgIDxkaXYgY2xhc3M9ImJhcnRyYWNrIj48ZGl2IGNsYXNzPSJiYXJ6ZXJvIj48L2Rpdj4ke3RpY2t9PGRpdiBjbGFzcz0iYmFyZmlsbCIgc3R5bGU9ImxlZnQ6JHtsZWZ0fSU7d2lkdGg6JHt3aWR0aH0lO2JhY2tncm91bmQ6JHtjb3YuY29sb3J9Ij48L2Rpdj48L2Rpdj4KICAgIDxkaXYgY2xhc3M9ImJhcnZhbHVlIj4ke3ZhbHVlLnRvRml4ZWQoMil9PC9kaXY+CiAgPC9kaXY+YDsKfQoKYnRuUmV2ZWFsLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywoKT0+ewogIGNoYWxsZW5nZVN0YXRlLmhpZGRlbj1mYWxzZTsKICBsb2NrYm94LnRleHRDb250ZW50PSfwn5GBIFRydWUgzrIgKGdyYXNzLCB3YXRlciwgdHJlZSkgPSAnK2NoYWxsZW5nZVN0YXRlLnRydWVCZXRhLm1hcCh2PT52LnRvRml4ZWQoMikpLmpvaW4oJywgJyk7CiAgbG9ja2JveC5jbGFzc0xpc3QuYWRkKCdvcGVuJyk7CiAgdXBkYXRlRml0KHRydWUpOwp9KTsKCi8vID09PT09PT09PT09PT09PT09IFRBQlMgPT09PT09PT09PT09PT09PT0KZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RhYkV4cGxvcmVCdG4nKS5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsKCk9PnN3aXRjaFRhYignZXhwbG9yZScpKTsKZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RhYkNoYWxsZW5nZUJ0bicpLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywoKT0+c3dpdGNoVGFiKCdjaGFsbGVuZ2UnKSk7CmZ1bmN0aW9uIHN3aXRjaFRhYihuYW1lKXsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgndGFiRXhwbG9yZUJ0bicpLmNsYXNzTGlzdC50b2dnbGUoJ2FjdGl2ZScsbmFtZT09PSdleHBsb3JlJyk7CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RhYkNoYWxsZW5nZUJ0bicpLmNsYXNzTGlzdC50b2dnbGUoJ2FjdGl2ZScsbmFtZT09PSdjaGFsbGVuZ2UnKTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGFuZWxFeHBsb3JlJykuY2xhc3NMaXN0LnRvZ2dsZSgnYWN0aXZlJyxuYW1lPT09J2V4cGxvcmUnKTsKICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGFuZWxDaGFsbGVuZ2UnKS5jbGFzc0xpc3QudG9nZ2xlKCdhY3RpdmUnLG5hbWU9PT0nY2hhbGxlbmdlJyk7Cn0KCmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5OZXdMYW5kc2NhcGUnKS5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsKCk9PnsKICBpZihleHBsb3JlU3RhdGUuYW5pbWF0aW5nfHxjaGFsbGVuZ2VTdGF0ZS5hbmltYXRpbmcpIHJldHVybjsKICByZWdlbmVyYXRlTGFuZHNjYXBlKCk7Cn0pOwoKLy8gLS0tLS0tLS0tLS0tLS0tLSBpbml0IC0tLS0tLS0tLS0tLS0tLS0KcmVnZW5lcmF0ZUxhbmRzY2FwZSgpOwp9KSgpOwo8L3NjcmlwdD4KPC9ib2R5Pgo8L2h0bWw+IA==</script>
+<script>
+(function(){
+"use strict";
+
+// ============================================================
+// Shared navigation
+// ============================================================
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id===id));
+  window.scrollTo(0,0);
+  document.dispatchEvent(new CustomEvent('panelchange',{detail:{id}}));
+}
+document.querySelectorAll('[data-target]').forEach(btn=>{
+  btn.addEventListener('click', ()=>showPanel(btn.dataset.target));
+});
+document.querySelectorAll('[data-home]').forEach(btn=>{
+  btn.addEventListener('click', ()=>showPanel('panelHome'));
+});
+function isPanelActive(id){
+  const el=document.getElementById(id);
+  return el && el.classList.contains('active');
+}
+
+// ============================================================
+// Shared chart utility (simple canvas line chart)
+// ============================================================
+function drawSeriesChart(canvas, opts){
+  const series=opts.series||[];
+  const xMax=opts.xMax||10, yMin=opts.yMin!==undefined?opts.yMin:0, yMax=opts.yMax!==undefined?opts.yMax:1;
+  const xlabel=opts.xlabel||'', ylabel=opts.ylabel||'';
+  const refLines=opts.refLines||[];
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padL=44,padR=12,padT=14,padB=26;
+  const plotW=Math.max(10,w-padL-padR), plotH=Math.max(10,h-padT-padB);
+  ctx.strokeStyle='#d8d2c3'; ctx.lineWidth=1;
+  ctx.strokeRect(padL+0.5,padT+0.5,plotW,plotH);
+  const X=x=>padL+(x/(xMax||1))*plotW;
+  const Y=y=>padT+plotH-((y-yMin)/((yMax-yMin)||1))*plotH;
+  refLines.forEach(rl=>{
+    if(rl.y===null||rl.y===undefined||Number.isNaN(rl.y)) return;
+    ctx.save();
+    ctx.strokeStyle=rl.color||'#999'; ctx.setLineDash(rl.dash||[5,4]); ctx.lineWidth=1.3;
+    ctx.beginPath(); ctx.moveTo(padL,Y(rl.y)); ctx.lineTo(padL+plotW,Y(rl.y)); ctx.stroke();
+    ctx.restore();
+  });
+  series.forEach(s=>{
+    if(!s.data || s.data.length===0) return;
+    ctx.beginPath();
+    ctx.strokeStyle=s.color; ctx.lineWidth=1.6;
+    s.data.forEach((p,i)=>{
+      const px=X(p.x), py=Y(p.y);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    });
+    ctx.stroke();
+  });
+  ctx.fillStyle='#736c60'; ctx.font='11px sans-serif';
+  ctx.save();
+  ctx.translate(12,padT+plotH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';
+  ctx.fillText(ylabel,0,0);
+  ctx.restore();
+  ctx.textAlign='center';
+  ctx.fillText(xlabel, padL+plotW/2, h-6);
+  ctx.textAlign='left';
+  let lx=padL+8, ly=padT+12;
+  series.forEach(s=>{
+    ctx.fillStyle=s.color; ctx.fillRect(lx,ly-8,10,3);
+    ctx.fillStyle='#242220'; ctx.fillText(s.label, lx+14, ly);
+    lx+=18+ctx.measureText(s.label).width+16;
+  });
+}
+
+// ============================================================
+// Shared grid renderer (nearest-neighbor upscaled ImageData)
+// ============================================================
+function renderGrid(canvas, data, L, palette){
+  let off=canvas._offCanvas;
+  if(!off || off.width!==L || off.height!==L){
+    off=document.createElement('canvas'); off.width=L; off.height=L;
+    canvas._offCanvas=off;
+  }
+  const octx=off.getContext('2d');
+  const img=octx.createImageData(L,L);
+  for(let i=0;i<L*L;i++){
+    const v=data[i];
+    const c=palette[v]||[255,255,255];
+    const o=i*4;
+    img.data[o]=c[0]; img.data[o+1]=c[1]; img.data[o+2]=c[2]; img.data[o+3]=255;
+  }
+  octx.putImageData(img,0,0);
+  const ctx=canvas.getContext('2d');
+  ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(off,0,0,canvas.width,canvas.height);
+}
+
+// toroidal neighbor-fraction helper: total[y,x] = mean over shifts of mask[(y-dx)%L,(x-dy)%L]
+function neighborFraction(mask, L, shifts){
+  const total=new Float32Array(L*L);
+  for(let s=0;s<shifts.length;s++){
+    const dx=shifts[s][0], dy=shifts[s][1];
+    for(let y=0;y<L;y++){
+      const sy=((y-dx)%L+L)%L;
+      const rowBase=sy*L;
+      const outBase=y*L;
+      for(let x=0;x<L;x++){
+        const sx=((x-dy)%L+L)%L;
+        total[outBase+x]+=mask[rowBase+sx];
+      }
+    }
+  }
+  const inv=1/shifts.length;
+  for(let i=0;i<total.length;i++) total[i]*=inv;
+  return total;
+}
+function maskOf(grid, val){
+  const m=new Uint8Array(grid.length);
+  for(let i=0;i<grid.length;i++) m[i]=grid[i]===val?1:0;
+  return m;
+}
+function gaussianRandom(){
+  let u=0,v=0;
+  while(u===0)u=Math.random();
+  while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+// ============================================================
+// Plant community competition model (Surendran et al. 2025)
+// ============================================================
+const PlantModule = (function(){
+  const DOMAIN_L=20.0, MAX_N_INIT=4000, EVENTS_PER_FRAME=150;
+  let kernelType='gaussian';
+  let rc=2.0, s=0.3, b=3.05, d=0.305, g=1.0;
+  let positions=[], compSum=[], t=0, tHist=[0], nHist=[0];
+  let running=false;
+  let lastCorr=null;
+
+  function kernel(dist){
+    if(kernelType==='gaussian') return Math.exp(-(dist*dist)/(2*rc*rc))/(2*Math.PI*rc*rc);
+    return dist<=rc ? 1.0/(Math.PI*rc*rc) : 0.0;
+  }
+  function predictedEq(bb,dd,gg){
+    if(gg<=0) return NaN;
+    const densH=(bb-dd)/gg;
+    if(densH<=0) return 0.0;
+    return densH*DOMAIN_L*DOMAIN_L;
+  }
+  function periodicDiff(a,bv){
+    let diff=a-bv;
+    return diff - DOMAIN_L*Math.round(diff/DOMAIN_L);
+  }
+  function distBetween(p1,p2){
+    const dx=periodicDiff(p1.x,p2.x), dy=periodicDiff(p1.y,p2.y);
+    return Math.sqrt(dx*dx+dy*dy);
+  }
+
+  function resetModel(){
+    const nInit=Math.max(10, Math.min(MAX_N_INIT, Math.round(predictedEq(b,d,g)) || 10));
+    positions=[];
+    for(let i=0;i<nInit;i++) positions.push({x:Math.random()*DOMAIN_L, y:Math.random()*DOMAIN_L});
+    t=0; tHist=[0]; nHist=[positions.length];
+    compSum=new Array(positions.length).fill(0);
+    for(let i=0;i<positions.length;i++){
+      let sum=0;
+      for(let j=0;j<positions.length;j++){
+        if(i===j) continue;
+        sum+=kernel(distBetween(positions[i],positions[j]));
+      }
+      compSum[i]=sum;
+    }
+    lastCorr=null;
+    document.getElementById('plantCorrCard').style.display='none';
+  }
+
+  function doBirth(){
+    const n=positions.length;
+    const parent=positions[Math.floor(Math.random()*n)];
+    const offx=gaussianRandom()*s, offy=gaussianRandom()*s;
+    const newPos={
+      x:((parent.x+offx)%DOMAIN_L+DOMAIN_L)%DOMAIN_L,
+      y:((parent.y+offy)%DOMAIN_L+DOMAIN_L)%DOMAIN_L
+    };
+    let newSum=0;
+    for(let i=0;i<n;i++){
+      const k=kernel(distBetween(positions[i],newPos));
+      compSum[i]+=k; newSum+=k;
+    }
+    positions.push(newPos);
+    compSum.push(newSum);
+  }
+  function doDeath(deathRates,totalDeath){
+    let r=Math.random()*totalDeath, acc=0, idx=positions.length-1;
+    for(let i=0;i<deathRates.length;i++){
+      acc+=deathRates[i];
+      if(r<=acc){ idx=i; break; }
+    }
+    const deadPos=positions[idx];
+    for(let i=0;i<positions.length;i++){
+      if(i===idx) continue;
+      compSum[i]-=kernel(distBetween(positions[i],deadPos));
+    }
+    positions.splice(idx,1);
+    compSum.splice(idx,1);
+  }
+  function stepEvents(nEvents){
+    for(let e=0;e<nEvents;e++){
+      const n=positions.length;
+      if(n===0) break;
+      const deathRates=new Array(n);
+      let totalDeath=0;
+      for(let i=0;i<n;i++){ deathRates[i]=d+g*compSum[i]; totalDeath+=deathRates[i]; }
+      const totalBirth=b*n;
+      const total=totalBirth+totalDeath;
+      if(total<=0) break;
+      t += -Math.log(Math.random())/total;
+      if(Math.random()*total < totalBirth) doBirth(); else doDeath(deathRates,totalDeath);
+      tHist.push(t); nHist.push(positions.length);
+    }
+    if(tHist.length>3000){ tHist=tHist.slice(-3000); nHist=nHist.slice(-3000); }
+  }
+
+  function pairCorrelation(nBins){
+    nBins=nBins||40;
+    const n=positions.length;
+    if(n<2) return null;
+    const rMax=DOMAIN_L/2;
+    const area=DOMAIN_L*DOMAIN_L;
+    const density=n/area;
+    const dr=rMax/nBins;
+    const counts=new Array(nBins).fill(0);
+    for(let i=0;i<n;i++){
+      for(let j=0;j<n;j++){
+        if(i===j) continue;
+        const dd=distBetween(positions[i],positions[j]);
+        if(dd>0 && dd<rMax){
+          let bin=Math.floor(dd/dr);
+          if(bin>=nBins) bin=nBins-1;
+          counts[bin]++;
+        }
+      }
+    }
+    const rCenters=[], C=[];
+    for(let i=0;i<nBins;i++){
+      const rC=(i+0.5)*dr;
+      rCenters.push(rC);
+      const expected=n*density*2*Math.PI*rC*dr;
+      C.push(expected>0 ? counts[i]/expected : 0);
+    }
+    return {rCenters,C};
+  }
+
+  // ---------------- rendering ----------------
+  function render(){
+    const canvas=document.getElementById('plantCanvas');
+    const ctx=canvas.getContext('2d');
+    const wpx=canvas.width, hpx=canvas.height;
+    ctx.fillStyle='#5a3d2b';
+    ctx.fillRect(0,0,wpx,hpx);
+    ctx.fillStyle='#3aa63a';
+    for(const p of positions){
+      const px=p.x/DOMAIN_L*wpx, py=hpx-p.y/DOMAIN_L*hpx;
+      ctx.beginPath(); ctx.arc(px,py,2.6,0,Math.PI*2); ctx.fill();
+    }
+    document.getElementById('plantCount').textContent='Plants: '+positions.length+'   t = '+t.toFixed(2);
+
+    const chart=document.getElementById('plantChart');
+    const nStar=predictedEq(b,d,g);
+    const nMax=Math.max(10, ...nHist, Number.isFinite(nStar)?nStar:0)*1.15;
+    const tMax=Math.max(10, t);
+    drawSeriesChart(chart,{
+      series:[{label:'population',color:'#000',data:tHist.map((tt,i)=>({x:tt,y:nHist[i]}))}],
+      xMax:tMax, yMin:0, yMax:nMax,
+      xlabel:'t', ylabel:'# individuals',
+      refLines:[{y:nStar,color:'red',dash:[5,4]}]
+    });
+
+    if(lastCorr){
+      const cc=document.getElementById('plantCorrChart');
+      const cMax=Math.max(2, ...lastCorr.C)*1.15;
+      drawSeriesChart(cc,{
+        series:[{label:'C(r)',color:'#000',data:lastCorr.rCenters.map((r,i)=>({x:r,y:lastCorr.C[i]}))}],
+        xMax:DOMAIN_L/2, yMin:0, yMax:cMax,
+        xlabel:'r', ylabel:'C(r)',
+        refLines:[{y:1,color:'#999',dash:[5,4]}]
+      });
+    }
+  }
+
+  // ---------------- UI wiring ----------------
+  function syncReadouts(){
+    document.getElementById('plantRcVal').textContent=rc.toFixed(2);
+    document.getElementById('plantSVal').textContent=s.toFixed(2);
+    document.getElementById('plantBVal').textContent=b.toFixed(2);
+    document.getElementById('plantDVal').textContent=d.toFixed(3);
+    document.getElementById('plantGVal').textContent=g.toFixed(2);
+  }
+
+  function init(){
+    document.getElementById('plantKernelToggle').addEventListener('click', e=>{
+      const btn=e.target.closest('button'); if(!btn) return;
+      document.querySelectorAll('#plantKernelToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      kernelType=btn.dataset.kernel;
+      if(kernelType==='tophat'){ rc=2.2; s=0.15; } else { rc=2.0; s=0.3; }
+      document.getElementById('plantRc').value=rc;
+      document.getElementById('plantS').value=s;
+      syncReadouts();
+      resetModel();
+      render();
+    });
+    document.getElementById('plantRc').addEventListener('input', e=>{ rc=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('plantS').addEventListener('input', e=>{ s=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('plantB').addEventListener('input', e=>{ b=parseFloat(e.target.value)||b; syncReadouts(); });
+    document.getElementById('plantD').addEventListener('input', e=>{ d=parseFloat(e.target.value)||d; syncReadouts(); });
+    document.getElementById('plantG').addEventListener('input', e=>{ g=parseFloat(e.target.value)||g; syncReadouts(); });
+
+    const startBtn=document.getElementById('plantStart');
+    startBtn.addEventListener('click', ()=>{
+      running=!running;
+      startBtn.textContent = running ? 'Stop' : '▶ Start';
+    });
+    document.getElementById('plantReset').addEventListener('click', ()=>{
+      running=false; startBtn.textContent='▶ Start';
+      resetModel(); render();
+    });
+    document.getElementById('plantCorr').addEventListener('click', ()=>{
+      lastCorr=pairCorrelation(40);
+      if(lastCorr){
+        document.getElementById('plantCorrCard').style.display='block';
+        render();
+      }
+    });
+
+    syncReadouts();
+    resetModel();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelPlant')) return;
+    if(running) stepEvents(EVENTS_PER_FRAME);
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// 1D contact process (event-driven, ring lattice)
+// ============================================================
+const CP1DModule = (function(){
+  let N=300, rho0=0.35, p=0.85, speed=1;
+  let left, right, s, soc, oc, sweepCount=0, extinct=false, running=true;
+  let sweepHist=[0], rhoHist=[0];
+  const windowSweeps=400;
+  const maxRows=200;
+  let historyRows=[];
+
+  function initLookup(){
+    left=new Int32Array(N); right=new Int32Array(N);
+    for(let i=0;i<N;i++){ left[i]=(i-1+N)%N; right[i]=(i+1)%N; }
+  }
+  function resetCP(){
+    initLookup();
+    s=new Uint8Array(N);
+    soc=[];
+    for(let i=0;i<N;i++){
+      if(Math.random()<rho0){ s[i]=1; soc.push(i); }
+    }
+    oc=soc.length;
+    sweepCount=0; extinct=false;
+    sweepHist=[0]; rhoHist=[oc/N];
+    historyRows=[];
+    for(let r=0;r<maxRows;r++) historyRows.push(new Uint8Array(N));
+    historyRows[0].set(s);
+  }
+  function stepEvent(){
+    if(oc===0) return false;
+    const ic=Math.floor(Math.random()*oc);
+    const site=soc[ic];
+    if(Math.random()>=p){
+      s[site]=0;
+      const last=oc-1;
+      soc[ic]=soc[last];
+      soc.pop();
+      oc--;
+    } else {
+      const nb = Math.random()<0.5 ? left[site] : right[site];
+      if(s[nb]===0){ s[nb]=1; soc.push(nb); oc++; }
+    }
+    return oc>0;
+  }
+  function sweepOnce(){
+    let alive=true;
+    for(let i=0;i<N;i++){
+      alive=stepEvent();
+      if(!alive) break;
+    }
+    sweepCount++;
+    for(let r=maxRows-1;r>0;r--) historyRows[r].set(historyRows[r-1]);
+    historyRows[0].set(s);
+    sweepHist.push(sweepCount);
+    rhoHist.push(oc/N);
+    if(sweepHist.length>windowSweeps){ sweepHist.shift(); rhoHist.shift(); }
+    if(!alive) extinct=true;
+    return alive;
+  }
+
+  function render(){
+    const chart=document.getElementById('cpChart');
+    const x0=sweepHist[0]||0;
+    drawSeriesChart(chart,{
+      series:[{label:'ρ(t)',color:'#1d5fd6',data:sweepHist.map((sw,i)=>({x:sw-x0,y:rhoHist[i]}))}],
+      xMax:Math.max(10, (sweepHist[sweepHist.length-1]||0)-x0),
+      yMin:-0.02, yMax:1.02,
+      xlabel:'sweep (≈ events / N)', ylabel:'ρ(t)'
+    });
+
+    const raster=document.getElementById('cpRaster');
+    const flat=new Uint8Array(N*maxRows);
+    for(let r=0;r<maxRows;r++){
+      flat.set(historyRows[r], r*N);
+    }
+    // palette 0/1 -> grayscale (occupied = dark)
+    renderGridRows(raster, flat, N, maxRows);
+
+    const tag=extinct ? '  -- EXTINCT (absorbing state, press Reset)' : '';
+    document.getElementById('cpStatus').textContent =
+      'p='+p.toFixed(3)+'  sweep='+sweepCount+'  rho='+(oc/N).toFixed(3)+tag;
+  }
+  function renderGridRows(canvas, flat, w, h){
+    let off=canvas._offCanvas;
+    if(!off || off.width!==w || off.height!==h){
+      off=document.createElement('canvas'); off.width=w; off.height=h;
+      canvas._offCanvas=off;
+    }
+    const octx=off.getContext('2d');
+    const img=octx.createImageData(w,h);
+    for(let i=0;i<w*h;i++){
+      const v=flat[i];
+      const c=v ? 30 : 250;
+      const o=i*4;
+      img.data[o]=c; img.data[o+1]=c; img.data[o+2]=c; img.data[o+3]=255;
+    }
+    octx.putImageData(img,0,0);
+    const ctx=canvas.getContext('2d');
+    ctx.imageSmoothingEnabled=false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(off,0,0,canvas.width,canvas.height);
+  }
+
+  function syncReadouts(){
+    document.getElementById('cpPVal').textContent=p.toFixed(3);
+    document.getElementById('cpNVal').textContent=N;
+    document.getElementById('cpRho0Val').textContent=rho0.toFixed(2);
+    document.getElementById('cpSpeedVal').textContent=speed;
+  }
+
+  function init(){
+    document.getElementById('cpP').addEventListener('input', e=>{ p=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('cpN').addEventListener('input', e=>{ N=parseInt(e.target.value,10); syncReadouts(); });
+    document.getElementById('cpRho0').addEventListener('input', e=>{ rho0=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('cpSpeed').addEventListener('input', e=>{ speed=parseInt(e.target.value,10); syncReadouts(); });
+
+    const pauseBtn=document.getElementById('cpPause');
+    pauseBtn.addEventListener('click', ()=>{
+      running=!running;
+      pauseBtn.textContent = running ? 'Pause' : 'Resume';
+    });
+    document.getElementById('cpReset').addEventListener('click', ()=>{
+      resetCP();
+      running=true; pauseBtn.textContent='Pause';
+      render();
+    });
+
+    syncReadouts();
+    resetCP();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelCP1D')) return;
+    if(running && !extinct){
+      for(let k=0;k<speed;k++){
+        const alive=sweepOnce();
+        if(!alive) break;
+      }
+    }
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// Colicin allelopathy lattice model (Durrett & Levin 1997)
+// ============================================================
+const ColicinModule = (function(){
+  const N0_SHIFTS=[[1,0],[-1,0],[0,1],[0,-1]];
+  const N1_SHIFTS=N0_SHIFTS.concat([[1,1],[1,-1],[-1,1],[-1,-1]]);
+  const PALETTE=[[255,255,255],[220,30,30],[40,90,230]]; // 0 vacant,1 producer(red),2 sensitive(blue)
+
+  let size=100, b1=3.0, b2=4.0, d1=1.0, d2=1.0, gamma=3.0, p1Init=0.01, p2Init=0.50;
+  let neighborhood='N0', dt=0.05, speed=1;
+  let grid, time=0, histT=[], histF1=[], histF2=[];
+  let running=false;
+
+  function shifts(){ return neighborhood==='N1' ? N1_SHIFTS : N0_SHIFTS; }
+
+  function reset(){
+    const L=size;
+    grid=new Uint8Array(L*L);
+    for(let i=0;i<L*L;i++){
+      const r=Math.random();
+      if(r<p1Init) grid[i]=1;
+      else if(r<p1Init+p2Init) grid[i]=2;
+    }
+    time=0; histT=[]; histF1=[]; histF2=[];
+    record();
+  }
+  function record(){
+    const n=size*size;
+    let c1=0,c2=0;
+    for(let i=0;i<n;i++){ if(grid[i]===1)c1++; else if(grid[i]===2)c2++; }
+    histT.push(time); histF1.push(c1/n); histF2.push(c2/n);
+    if(histT.length>3000){ histT.shift(); histF1.shift(); histF2.shift(); }
+  }
+
+  function step(){
+    const L=size, n=L*L;
+    const is1=maskOf(grid,1), is2=maskOf(grid,2);
+    const sh=shifts();
+    const f1=neighborFraction(is1,L,sh);
+    const f2=neighborFraction(is2,L,sh);
+    const newGrid=grid.slice();
+    for(let i=0;i<n;i++){
+      const st=grid[i];
+      const r=Math.random();
+      if(st===0){
+        const pB1=Math.min(1,Math.max(0,b1*f1[i]*dt));
+        const pB2=Math.min(1,Math.max(0,b2*f2[i]*dt));
+        if(r<pB1) newGrid[i]=1;
+        else if(r<pB1+pB2) newGrid[i]=2;
+      } else if(st===1){
+        const pD1=Math.min(1,d1*dt);
+        if(r<pD1) newGrid[i]=0;
+      } else if(st===2){
+        const pD2=Math.min(1,Math.max(0,(d2+gamma*f1[i])*dt));
+        if(r<pD2) newGrid[i]=0;
+      }
+    }
+    grid=newGrid;
+    time+=dt;
+    record();
+  }
+
+  function render(){
+    renderGrid(document.getElementById('coliGrid'), grid, size, PALETTE);
+    const chart=document.getElementById('coliChart');
+    const tMax=Math.max(10, time);
+    drawSeriesChart(chart,{
+      series:[
+        {label:'producers (1)',color:'#dc1e1e',data:histT.map((tt,i)=>({x:tt,y:histF1[i]}))},
+        {label:'sensitive (2)',color:'#2864e6',data:histT.map((tt,i)=>({x:tt,y:histF2[i]}))}
+      ],
+      xMax:tMax, yMin:0, yMax:1,
+      xlabel:'time', ylabel:'density'
+    });
+    const f1=histF1[histF1.length-1]||0, f2=histF2[histF2.length-1]||0;
+    const f0=1-f1-f2;
+    document.getElementById('coliInfo').textContent =
+      't = '+time.toFixed(2)+'   density: producers='+f1.toFixed(3)+'  sensitive='+f2.toFixed(3)+'  vacant='+f0.toFixed(3);
+  }
+
+  function syncReadouts(){
+    document.getElementById('coliB1Val').textContent=b1.toFixed(1);
+    document.getElementById('coliB2Val').textContent=b2.toFixed(1);
+    document.getElementById('coliD1Val').textContent=d1.toFixed(1);
+    document.getElementById('coliD2Val').textContent=d2.toFixed(1);
+    document.getElementById('coliGammaVal').textContent=gamma.toFixed(1);
+    document.getElementById('coliDtVal').textContent=dt.toFixed(3);
+    document.getElementById('coliSpeedVal').textContent=speed;
+    document.getElementById('coliP1Val').textContent=p1Init.toFixed(2);
+    document.getElementById('coliP2Val').textContent=p2Init.toFixed(2);
+    document.getElementById('coliSizeVal').textContent=size;
+  }
+
+  function init(){
+    document.getElementById('coliB1').addEventListener('input', e=>{ b1=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliB2').addEventListener('input', e=>{ b2=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliD1').addEventListener('input', e=>{ d1=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliD2').addEventListener('input', e=>{ d2=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliGamma').addEventListener('input', e=>{ gamma=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliDt').addEventListener('input', e=>{ dt=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliSpeed').addEventListener('input', e=>{ speed=parseInt(e.target.value,10); syncReadouts(); });
+    document.getElementById('coliP1').addEventListener('input', e=>{ p1Init=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliP2').addEventListener('input', e=>{ p2Init=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('coliSize').addEventListener('input', e=>{ size=parseInt(e.target.value,10); syncReadouts(); });
+
+    document.getElementById('coliNbToggle').addEventListener('click', e=>{
+      const btn=e.target.closest('button'); if(!btn) return;
+      document.querySelectorAll('#coliNbToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      neighborhood=btn.dataset.nb;
+    });
+
+    const playBtn=document.getElementById('coliPlay');
+    playBtn.addEventListener('click', ()=>{
+      running=!running;
+      playBtn.textContent = running ? 'Pause' : '▶ Play';
+    });
+    document.getElementById('coliReset').addEventListener('click', ()=>{
+      reset(); render();
+    });
+    document.getElementById('coliStep').addEventListener('click', ()=>{
+      step(); render();
+    });
+
+    syncReadouts();
+    reset();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelColicin')) return;
+    if(running){
+      for(let k=0;k<speed;k++) step();
+    }
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// Spatial rock-paper-scissors with mobility (Reichenbach, Mobilia & Frey 2007)
+// ============================================================
+const RPSModule = (function(){
+  const EMPTY=0, A=1, B=2, C=3;
+  const BEATS=[0,2,3,1]; // BEATS[A]=B, BEATS[B]=C, BEATS[C]=A
+  const PALETTE=[[0,0,0],[220,20,20],[30,80,230],[212,175,55]];
+  const MC_REFERENCE=4.5e-4;
+
+  let size=100, sigma=1.0, mu=1.0, epsilon=1.0, vacancyInit=0.25, dt=0.02, speed=2;
+  let grid, L, time=0, histT=[], histA=[], histB=[], histC=[];
+  let running=false;
+
+  function pairIndices(Lsize, offset){
+    let idxA=[], idxB=[];
+    if(offset===0){
+      for(let i=0;i<Lsize;i+=2) idxA.push(i);
+      for(let i=1;i<Lsize;i+=2) idxB.push(i);
+    } else {
+      for(let i=1;i<Lsize-1;i+=2) idxA.push(i);
+      idxA.push(Lsize-1);
+      for(let i=2;i<Lsize;i+=2) idxB.push(i);
+      idxB.push(0);
+    }
+    return [idxA, idxB];
+  }
+  function normPair(p1,p2){
+    const total=p1+p2;
+    if(total>1.0) return [p1/total,p2/total];
+    return [p1,p2];
+  }
+  function reactPair(a,bv,rand){
+    let newA=a, newB=bv;
+    const pRepro=mu*dt, pExch=epsilon*dt, pSel=sigma*dt;
+    const [pReproRe,pExchRe]=normPair(pRepro,pExch);
+    const [pSelSe,pExchSe]=normPair(pSel,pExch);
+    const aEmpty=(a===EMPTY)&&(bv!==EMPTY);
+    const bEmpty=(bv===EMPTY)&&(a!==EMPTY);
+    const diffSpecies=(a!==bv)&&(a!==EMPTY)&&(bv!==EMPTY);
+    if(aEmpty){
+      const thrRe=pReproRe, thrReEx=pReproRe+pExchRe;
+      if(rand<thrRe){ newA=bv; }
+      else if(rand<thrReEx){ newA=bv; newB=EMPTY; }
+    } else if(bEmpty){
+      const thrRe=pReproRe, thrReEx=pReproRe+pExchRe;
+      if(rand<thrRe){ newB=a; }
+      else if(rand<thrReEx){ newB=a; newA=EMPTY; }
+    } else if(diffSpecies){
+      const thrSe=pSelSe, thrSeEx=pSelSe+pExchSe;
+      const aWins=BEATS[a]===bv;
+      const bWins=BEATS[bv]===a;
+      if(aWins){
+        if(rand<thrSe){ newB=EMPTY; }
+        else if(rand<thrSeEx){ newA=bv; newB=a; }
+      } else if(bWins){
+        if(rand<thrSe){ newA=EMPTY; }
+        else if(rand<thrSeEx){ newA=bv; newB=a; }
+      }
+    }
+    return [newA,newB];
+  }
+
+  function applyPass(idxA, idxB, horizontal){
+    for(let i=0;i<idxA.length;i++){
+      const ia=idxA[i], ib=idxB[i];
+      if(horizontal){
+        for(let y=0;y<L;y++){
+          const posA=y*L+ia, posB=y*L+ib;
+          const r=Math.random();
+          const [na,nb]=reactPair(grid[posA],grid[posB],r);
+          grid[posA]=na; grid[posB]=nb;
+        }
+      } else {
+        for(let x=0;x<L;x++){
+          const posA=ia*L+x, posB=ib*L+x;
+          const r=Math.random();
+          const [na,nb]=reactPair(grid[posA],grid[posB],r);
+          grid[posA]=na; grid[posB]=nb;
+        }
+      }
+    }
+  }
+
+  function reset(){
+    L=size + (size%2); size=L;
+    grid=new Uint8Array(L*L);
+    const pEach=Math.max(0,(1-vacancyInit)/3);
+    for(let i=0;i<L*L;i++){
+      const r=Math.random();
+      if(r<pEach) grid[i]=A;
+      else if(r<2*pEach) grid[i]=B;
+      else if(r<3*pEach) grid[i]=C;
+    }
+    time=0; histT=[]; histA=[]; histB=[]; histC=[];
+    record();
+  }
+  function record(){
+    const n=L*L;
+    let ca=0,cb=0,cc=0;
+    for(let i=0;i<n;i++){ if(grid[i]===A)ca++; else if(grid[i]===B)cb++; else if(grid[i]===C)cc++; }
+    histT.push(time); histA.push(ca/n); histB.push(cb/n); histC.push(cc/n);
+    if(histT.length>3000){ histT.shift(); histA.shift(); histB.shift(); histC.shift(); }
+  }
+  function sweep(){
+    const passes=[
+      ()=>applyPass(...pairIndices(L,0), true),
+      ()=>applyPass(...pairIndices(L,1), true),
+      ()=>applyPass(...pairIndices(L,0), false),
+      ()=>applyPass(...pairIndices(L,1), false)
+    ];
+    const order=[0,1,2,3];
+    for(let i=order.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [order[i],order[j]]=[order[j],order[i]];
+    }
+    order.forEach(idx=>passes[idx]());
+    time+=dt;
+    record();
+  }
+
+  function mobility(){ return 2.0*epsilon/(L*L); }
+
+  function render(){
+    renderGrid(document.getElementById('rpsGrid'), grid, L, PALETTE);
+    const chart=document.getElementById('rpsChart');
+    const tMax=Math.max(10,time);
+    drawSeriesChart(chart,{
+      series:[
+        {label:'A',color:'#dc1414',data:histT.map((tt,i)=>({x:tt,y:histA[i]}))},
+        {label:'B',color:'#1e50e6',data:histT.map((tt,i)=>({x:tt,y:histB[i]}))},
+        {label:'C',color:'#d4af37',data:histT.map((tt,i)=>({x:tt,y:histC[i]}))}
+      ],
+      xMax:tMax, yMin:0, yMax:1,
+      xlabel:'time (generations)', ylabel:'density'
+    });
+    const fA=histA[histA.length-1]||0, fB=histB[histB.length-1]||0, fC=histC[histC.length-1]||0;
+    const f0=1-fA-fB-fC;
+    const M=mobility();
+    const relation = M<MC_REFERENCE ? '<' : '>';
+    document.getElementById('rpsInfo').textContent =
+      't = '+time.toFixed(2)+'   density: A='+fA.toFixed(3)+' B='+fB.toFixed(3)+' C='+fC.toFixed(3)+' vacant='+f0.toFixed(3)+'\n'+
+      'mobility M = 2·ε/N = '+M.toExponential(2)+'  '+relation+' Mc≈'+MC_REFERENCE.toExponential(1)+' (reference for σ=μ=1)';
+    const nExtinct=[fA,fB,fC].filter(f=>f<1e-6).length;
+    let status='';
+    if(nExtinct>=2){
+      const vals=[fA,fB,fC], names=['A','B','C'];
+      const survivor=names[vals.indexOf(Math.max(...vals))];
+      status='Biodiversity LOST — only species '+survivor+' remains';
+    } else if(nExtinct===1){
+      const vals=[fA,fB,fC], names=['A','B','C'];
+      const dying=names[vals.indexOf(Math.min(...vals))];
+      status='Species '+dying+' approaching extinction...';
+    }
+    document.getElementById('rpsStatus').textContent=status;
+  }
+
+  function syncReadouts(){
+    document.getElementById('rpsSigmaVal').textContent=sigma.toFixed(1);
+    document.getElementById('rpsMuVal').textContent=mu.toFixed(1);
+    document.getElementById('rpsEpsVal').textContent=epsilon.toFixed(1);
+    document.getElementById('rpsDtVal').textContent=dt.toFixed(3);
+    document.getElementById('rpsVacVal').textContent=vacancyInit.toFixed(2);
+    document.getElementById('rpsSizeVal').textContent=size;
+    document.getElementById('rpsSpeedVal').textContent=speed;
+  }
+
+  function init(){
+    document.getElementById('rpsSigma').addEventListener('input', e=>{ sigma=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('rpsMu').addEventListener('input', e=>{ mu=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('rpsEps').addEventListener('input', e=>{ epsilon=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('rpsDt').addEventListener('input', e=>{ dt=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('rpsVac').addEventListener('input', e=>{ vacancyInit=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('rpsSize').addEventListener('input', e=>{ size=parseInt(e.target.value,10); syncReadouts(); });
+    document.getElementById('rpsSpeed').addEventListener('input', e=>{ speed=parseInt(e.target.value,10); syncReadouts(); });
+
+    const playBtn=document.getElementById('rpsPlay');
+    playBtn.addEventListener('click', ()=>{
+      running=!running;
+      playBtn.textContent = running ? 'Pause' : '▶ Play';
+    });
+    document.getElementById('rpsReset').addEventListener('click', ()=>{ reset(); render(); });
+    document.getElementById('rpsStep').addEventListener('click', ()=>{ sweep(); render(); });
+
+    syncReadouts();
+    reset();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelRPS')) return;
+    if(running){ for(let k=0;k<speed;k++) sweep(); }
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// C-S-R rock-paper-scissors: local vs. global dispersal (Kerr et al. 2002)
+// ============================================================
+const CSRModule = (function(){
+  const EMPTY=0, C=1, S=2, R=3;
+  const PALETTE=[[255,255,255],[220,20,20],[30,80,230],[40,160,60]];
+  const MOORE_SHIFTS=(()=>{
+    const arr=[];
+    for(const dx of [-1,0,1]) for(const dy of [-1,0,1]) if(!(dx===0&&dy===0)) arr.push([dx,dy]);
+    return arr;
+  })();
+
+  let size=150, D_C=1/3, D_S0=1/4, D_R=10/32, tau=3/4, vacancyInit=0.25, neighborhood='local', speed=1;
+  let grid, time=0, histT=[], histC=[], histS=[], histR=[];
+  let running=false;
+
+  function reset(){
+    const L=size;
+    grid=new Uint8Array(L*L);
+    const pEach=Math.max(0,(1-vacancyInit)/3);
+    for(let i=0;i<L*L;i++){
+      const r=Math.random();
+      if(r<pEach) grid[i]=C;
+      else if(r<2*pEach) grid[i]=S;
+      else if(r<3*pEach) grid[i]=R;
+    }
+    time=0; histT=[]; histC=[]; histS=[]; histR=[];
+    record();
+  }
+  function record(){
+    const n=size*size;
+    let cc=0,cs=0,cr=0;
+    for(let i=0;i<n;i++){ if(grid[i]===C)cc++; else if(grid[i]===S)cs++; else if(grid[i]===R)cr++; }
+    histT.push(time); histC.push(cc/n); histS.push(cs/n); histR.push(cr/n);
+    if(histT.length>3000){ histT.shift(); histC.shift(); histS.shift(); histR.shift(); }
+  }
+  function neighborFractions(){
+    const L=size, n=L*L;
+    const isC=maskOf(grid,C), isS=maskOf(grid,S), isR=maskOf(grid,R);
+    if(neighborhood==='local'){
+      return [
+        neighborFraction(isC,L,MOORE_SHIFTS),
+        neighborFraction(isS,L,MOORE_SHIFTS),
+        neighborFraction(isR,L,MOORE_SHIFTS)
+      ];
+    } else {
+      let countC=0,countS=0,countR=0;
+      for(let i=0;i<n;i++){ countC+=isC[i]; countS+=isS[i]; countR+=isR[i]; }
+      const fC=new Float32Array(n), fS=new Float32Array(n), fR=new Float32Array(n);
+      for(let i=0;i<n;i++){
+        fC[i]=(countC-isC[i])/(n-1);
+        fS[i]=(countS-isS[i])/(n-1);
+        fR[i]=(countR-isR[i])/(n-1);
+      }
+      return [fC,fS,fR];
+    }
+  }
+  function sweep(){
+    const L=size, n=L*L;
+    const [fC,fS,fR]=neighborFractions();
+    const newGrid=grid.slice();
+    for(let i=0;i<n;i++){
+      const st=grid[i];
+      const r=Math.random();
+      const dS=Math.min(1,Math.max(0, D_S0+tau*fC[i]));
+      if(st===EMPTY){
+        const thrC=fC[i], thrS=fC[i]+fS[i], thrR=Math.min(1,fC[i]+fS[i]+fR[i]);
+        if(r<thrC) newGrid[i]=C;
+        else if(r<thrS) newGrid[i]=S;
+        else if(r<thrR) newGrid[i]=R;
+      } else if(st===C){
+        if(r<D_C) newGrid[i]=EMPTY;
+      } else if(st===R){
+        if(r<D_R) newGrid[i]=EMPTY;
+      } else if(st===S){
+        if(r<dS) newGrid[i]=EMPTY;
+      }
+    }
+    grid=newGrid;
+    time+=1.0;
+    record();
+  }
+  function coexistenceOk(){
+    const upper=(D_S0+tau)/(1+tau);
+    return D_S0<D_R && D_R<D_C && D_C<upper;
+  }
+
+  function render(){
+    renderGrid(document.getElementById('csrGrid'), grid, size, PALETTE);
+    const chart=document.getElementById('csrChart');
+    const tMax=Math.max(10,time);
+    drawSeriesChart(chart,{
+      series:[
+        {label:'C',color:'#dc1414',data:histT.map((tt,i)=>({x:tt,y:histC[i]}))},
+        {label:'S',color:'#1e50e6',data:histT.map((tt,i)=>({x:tt,y:histS[i]}))},
+        {label:'R',color:'#28a03c',data:histT.map((tt,i)=>({x:tt,y:histR[i]}))}
+      ],
+      xMax:tMax, yMin:0, yMax:1,
+      xlabel:'time (epochs)', ylabel:'density'
+    });
+    const fC=histC[histC.length-1]||0, fS=histS[histS.length-1]||0, fR=histR[histR.length-1]||0;
+    const f0=1-fC-fS-fR;
+    const ok=coexistenceOk();
+    document.getElementById('csrInfo').textContent =
+      'epoch = '+time.toFixed(0)+'  ('+neighborhood+')   density: C='+fC.toFixed(3)+' S='+fS.toFixed(3)+' R='+fR.toFixed(3)+' vacant='+f0.toFixed(3)+'\n'+
+      'coexistence (D_S0<D_R<D_C<(D_S0+tau)/(1+tau)): '+(ok?'satisfied':'VIOLATED');
+    const nExtinct=[fC,fS,fR].filter(f=>f<1e-6).length;
+    let status='';
+    if(nExtinct>=2){
+      const vals=[fC,fS,fR], names=['C','S','R'];
+      status='Biodiversity LOST — only '+names[vals.indexOf(Math.max(...vals))]+' remains';
+    } else if(nExtinct===1){
+      const vals=[fC,fS,fR], names=['C','S','R'];
+      status=names[vals.indexOf(Math.min(...vals))]+' approaching extinction...';
+    }
+    document.getElementById('csrStatus').textContent=status;
+  }
+
+  function syncReadouts(){
+    document.getElementById('csrDCVal').textContent=D_C.toFixed(3);
+    document.getElementById('csrDS0Val').textContent=D_S0.toFixed(3);
+    document.getElementById('csrDRVal').textContent=D_R.toFixed(3);
+    document.getElementById('csrTauVal').textContent=tau.toFixed(2);
+    document.getElementById('csrVacVal').textContent=vacancyInit.toFixed(2);
+    document.getElementById('csrSizeVal').textContent=size;
+    document.getElementById('csrSpeedVal').textContent=speed;
+  }
+
+  function init(){
+    document.getElementById('csrDC').addEventListener('input', e=>{ D_C=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('csrDS0').addEventListener('input', e=>{ D_S0=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('csrDR').addEventListener('input', e=>{ D_R=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('csrTau').addEventListener('input', e=>{ tau=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('csrVac').addEventListener('input', e=>{ vacancyInit=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('csrSize').addEventListener('input', e=>{ size=parseInt(e.target.value,10); syncReadouts(); });
+    document.getElementById('csrSpeed').addEventListener('input', e=>{ speed=parseInt(e.target.value,10); syncReadouts(); });
+
+    document.getElementById('csrNbToggle').addEventListener('click', e=>{
+      const btn=e.target.closest('button'); if(!btn) return;
+      document.querySelectorAll('#csrNbToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      neighborhood=btn.dataset.nb;
+    });
+
+    const playBtn=document.getElementById('csrPlay');
+    playBtn.addEventListener('click', ()=>{
+      running=!running;
+      playBtn.textContent = running ? 'Pause' : '▶ Play';
+    });
+    document.getElementById('csrReset').addEventListener('click', ()=>{ reset(); render(); });
+    document.getElementById('csrStep').addEventListener('click', ()=>{ sweep(); render(); });
+
+    syncReadouts();
+    reset();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelCSR')) return;
+    if(running){ for(let k=0;k<speed;k++) sweep(); }
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// SSF embed
+// ============================================================
+(function(){
+  const b64 = document.getElementById('ssfSourceB64').textContent.trim();
+  const html = atob(b64);
+  const iframe = document.getElementById('ssfIframe');
+  iframe.srcdoc = html;
+})();
+
+// ============================================================
+// Master tick loop (40ms) — each module checks its own panel visibility
+// ============================================================
+setInterval(function(){
+  if(typeof PlantModule!=='undefined') PlantModule.tick();
+  if(typeof CP1DModule!=='undefined') CP1DModule.tick();
+  if(typeof ColicinModule!=='undefined') ColicinModule.tick();
+  if(typeof RPSModule!=='undefined') RPSModule.tick();
+  if(typeof CSRModule!=='undefined') CSRModule.tick();
+}, 40);
+
+})();
+</script>
+</body>
+</html>
