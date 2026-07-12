@@ -729,12 +729,17 @@ const PlantModule = (function(){
     render();
   }
 
+  let plantFrameCount=0;
   function tick(){
     if(!isPanelActive('panelPlant')) return;
-    if(running) stepEvents(EVENTS_PER_FRAME);
-    render();
+    if(running){
+      stepEvents(EVENTS_PER_FRAME);
+      plantFrameCount++;
+      if(plantFrameCount%20===0) render();
+    } else {
+      render();
+    }
   }
-
   document.addEventListener('DOMContentLoaded', init);
   return { tick };
 })();
