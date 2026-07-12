@@ -9,10 +9,10 @@ model parameters shape emergent spatial patterns.
 
 | Script | Model | Reference |
 |---|---|---|
-| `python/spatial-logistic.py` | Plant community, Gaussian competition kernel | Surendran, Pinto-Ramos, Menezes & Martinez-Garcia, *Physica D* 477 (2025) 134703 |
-| `python/spatial-logistic-tophat.py` | Plant community, top-hat competition kernel | Surendran et al., *Physica D* 477 (2025) 134703 |
-| `python/cp1d.py` | 1D contact process | Classic birth-death process on a ring; critical point p_c ≈ 0.6494 |
-| `python/colicin.py` | Allelopathy (colicin producer/sensitive) lattice model | Durrett & Levin, *J. theor. Biol.* 185 (1997) 165-171 |
+| `python/spatial-logistic.py` | Off-lattice logistic model, Gaussian competition kernel | Surendran, Pinto-Ramos, Menezes & Martinez-Garcia, *Physica D* 477 (2025) 134703 |
+| `python/spatial-logistic-tophat.py` | Off-lattice logistic model, top-hat competition kernel | SSurendran, Pinto-Ramos, Menezes & Martinez-Garcia, *Physica D* 477 (2025) 134703 |
+| `python/cp1d.py` | On-lattice logistic model (1D contact process) | Classic birth-death process on a ring |
+| `python/colicin.py` | Allelopathy (colicin producer/sensitive) lattice model | Durrett & Levin, *J. Theor. Biol.* 185 (1997) 165-171 |
 | `python/rps-reichenbach.py` | Spatial rock-paper-scissors with mobility | Reichenbach, Mobilia & Frey, *Nature* 448 (2007) 1046-1049 |
 | `python/kerr-rps.py` | C-S-R (colicinogenic/sensitive/resistant) rock-paper-scissors | Kerr, Riley, Feldman & Bohannan, *Nature* 418 (2002) 171-174 |
 | `html/ssf.html` | Step-selection function (movement ecology) simulator | Browser-based, no dependencies |
