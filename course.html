@@ -17,10 +17,10 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     font-size:17px; line-height:1.4;
   }
-  .wrap{max-width:1300px;margin:0 auto;padding:22px 26px 60px;}
-  header h1{font-size:27px;margin:0 0 3px;}
-  header .sub{color:var(--muted);font-size:15px;margin-bottom:18px;}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+  .wrap{max-width:1300px;margin:0 auto;padding:14px 22px 26px;}
+  header h1{font-size:23px;margin:0 0 2px;}
+  header .sub{color:var(--muted);font-size:14px;margin-bottom:10px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 15px;margin-bottom:12px;}
   .btn{
     font-size:15px;font-weight:600;border:1px solid var(--border2);background:#fff;color:var(--ink);
     padding:10px 16px;border-radius:8px;cursor:pointer;transition:.15s;
@@ -42,11 +42,16 @@
   .panel{display:none;}
   .panel.active{display:block;}
 
-  .layout{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
-  .sidebar{width:300px;flex-shrink:0;}
-  .main{flex:1;min-width:520px;}
+  .layout{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+  .sidebar{width:280px;flex-shrink:0;}
+  .sidebar.wide{width:360px;}
+  .main{flex:1;min-width:460px;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;}
+  .row>.card{margin-bottom:0;flex:1;min-width:260px;}
+  .fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  .fields-grid .field{margin-bottom:6px;}
 
-  .field{margin-bottom:14px;}
+  .field{margin-bottom:10px;}
   .field label{display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-bottom:4px;}
   .field .readout{font-variant-numeric:tabular-nums;font-weight:700;}
   input[type=range]{width:100%;height:24px;accent-color:var(--ink);cursor:pointer;}
@@ -66,9 +71,9 @@
   .home-card h3{margin:0;font-size:18px;}
   .home-card p{margin:0;color:var(--muted);font-size:14px;flex:1;}
   .home-card .ref{font-size:12px;color:var(--muted);font-style:italic;}
-  .backbtn{margin-bottom:14px;}
-  .sectiontitle{font-size:22px;margin:0 0 4px;}
-  .sectionsub{color:var(--muted);font-size:14px;margin-bottom:16px;}
+  .backbtn{margin-bottom:8px;}
+  .sectiontitle{font-size:19px;margin:0 0 3px;}
+  .sectionsub{color:var(--muted);font-size:13px;margin-bottom:10px;}
   iframe.ssfframe{width:100%;height:1400px;border:1px solid var(--border);border-radius:12px;background:#fff;}
 </style>
 </head>
@@ -129,54 +134,58 @@
     <h2 class="sectiontitle">Off-lattice spatial logistic model</h2>
     <div class="sectionsub">Exact continuous-time spatial birth-death individual-based model (Gillespie SSA), periodic domain. Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025), Section 2.1.</div>
     <div class="layout">
-      <div class="sidebar">
+      <div class="sidebar wide">
         <div class="card">
-          <div class="field">
-            <label>Competition kernel</label>
-            <div class="toggle-group" id="plantKernelToggle" style="width:100%;display:flex;">
-              <button data-kernel="gaussian" class="active" style="flex:1;">Gaussian</button>
-              <button data-kernel="tophat" style="flex:1;">Top-hat</button>
+          <div class="fields-grid">
+            <div class="field" style="grid-column:1/3;">
+              <label>Competition kernel</label>
+              <div class="toggle-group" id="plantKernelToggle" style="width:100%;display:flex;">
+                <button data-kernel="gaussian" class="active" style="flex:1;">Gaussian</button>
+                <button data-kernel="tophat" style="flex:1;">Top-hat</button>
+              </div>
             </div>
-          </div>
-          <div class="field">
-            <label>b (birth rate) <span class="readout" id="plantBVal">3.05</span></label>
-            <input type="number" id="plantB" value="3.05" step="0.05">
-          </div>
-          <div class="field">
-            <label>d (death rate) <span class="readout" id="plantDVal">0.305</span></label>
-            <input type="number" id="plantD" value="0.305" step="0.01">
-          </div>
-          <div class="field">
-            <label>g (competition strength) <span class="readout" id="plantGVal">1.0</span></label>
-            <input type="number" id="plantG" value="1.0" step="0.1">
-          </div>
-          <div class="field">
-            <label>r_c (competition range) <span class="readout" id="plantRcVal">2.00</span></label>
-            <input type="range" id="plantRc" min="0.01" max="4" step="0.01" value="2.0">
-          </div>
-          <div class="field">
-            <label>s (dispersal range) <span class="readout" id="plantSVal">0.30</span></label>
-            <input type="range" id="plantS" min="0.01" max="1.25" step="0.01" value="0.3">
+            <div class="field">
+              <label>b (birth rate) <span class="readout" id="plantBVal">3.05</span></label>
+              <input type="number" id="plantB" value="3.05" step="0.05">
+            </div>
+            <div class="field">
+              <label>d (death rate) <span class="readout" id="plantDVal">0.305</span></label>
+              <input type="number" id="plantD" value="0.305" step="0.01">
+            </div>
+            <div class="field">
+              <label>g (competition strength) <span class="readout" id="plantGVal">1.0</span></label>
+              <input type="number" id="plantG" value="1.0" step="0.1">
+            </div>
+            <div class="field">
+              <label>r_c (competition range) <span class="readout" id="plantRcVal">2.00</span></label>
+              <input type="range" id="plantRc" min="0.01" max="4" step="0.01" value="2.0">
+            </div>
+            <div class="field" style="grid-column:1/3;">
+              <label>s (dispersal range) <span class="readout" id="plantSVal">0.30</span></label>
+              <input type="range" id="plantS" min="0.01" max="1.25" step="0.01" value="0.3">
+            </div>
           </div>
           <button class="btn primary" id="plantStart" style="width:100%;margin-bottom:8px;">&#9654; Start</button>
           <button class="btn" id="plantReset" style="width:100%;margin-bottom:8px;">Reset</button>
           <button class="btn" id="plantCorr" style="width:100%;">Pair correlation C(r)</button>
-          <div class="hint" style="margin-top:10px;">N_h = (b−d)/g·L² is the non-spatial (mean-field) equilibrium prediction, shown as the dashed red line.</div>
+          <div class="hint" style="margin-top:8px;">N_h = (b−d)/g·L² is the non-spatial (mean-field) equilibrium prediction, shown as the dashed red line.</div>
         </div>
       </div>
       <div class="main">
-        <div class="card">
-          <canvas class="stage" id="plantCanvas" width="500" height="500"></canvas>
-          <div class="stepline" id="plantCount">Plants: 0</div>
-        </div>
-        <div class="card">
-          <h3 style="margin:0 0 8px;font-size:15px;">Total population vs. time</h3>
-          <canvas class="stage chart-canvas" id="plantChart" width="700" height="260"></canvas>
+        <div class="row">
+          <div class="card">
+            <canvas class="stage" id="plantCanvas" width="380" height="380"></canvas>
+            <div class="stepline" id="plantCount">Plants: 0</div>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Total population vs. time</h3>
+            <canvas class="stage chart-canvas" id="plantChart" width="480" height="210"></canvas>
+          </div>
         </div>
         <div class="card" id="plantCorrCard" style="display:none;">
           <h3 style="margin:0 0 8px;font-size:15px;">Pair correlation function C(r)</h3>
           <div class="hint" style="margin-bottom:8px;">C(r) = 1 for a fully random pattern; C(r) &gt; 1 at small r indicates clustering, C(r) &lt; 1 indicates regularity/self-thinning.</div>
-          <canvas class="stage chart-canvas" id="plantCorrChart" width="700" height="260"></canvas>
+          <canvas class="stage chart-canvas" id="plantCorrChart" width="480" height="210"></canvas>
         </div>
       </div>
     </div>
@@ -211,12 +220,16 @@
         </div>
       </div>
       <div class="main">
-        <div class="card">
-          <div class="status-line" id="cpStatus"></div>
-          <h3 style="margin:10px 0 6px;font-size:15px;">Occupied fraction ρ(t) vs. sweep</h3>
-          <canvas class="stage chart-canvas" id="cpChart" width="700" height="200"></canvas>
-          <h3 style="margin:14px 0 6px;font-size:15px;">Space-time raster (newest at top)</h3>
-          <canvas class="stage grid-canvas" id="cpRaster" width="700" height="300"></canvas>
+        <div class="row">
+          <div class="card">
+            <div class="status-line" id="cpStatus"></div>
+            <h3 style="margin:8px 0 6px;font-size:15px;">Occupied fraction ρ(t) vs. sweep</h3>
+            <canvas class="stage chart-canvas" id="cpChart" width="460" height="220"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 6px;font-size:15px;">Space-time raster (newest at top)</h3>
+            <canvas class="stage grid-canvas" id="cpRaster" width="460" height="280"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -228,23 +241,25 @@
     <h2 class="sectiontitle">Colicin allelopathy lattice model</h2>
     <div class="sectionsub">RED = colicin producer &nbsp; BLUE = sensitive (non-producer) &nbsp; white = vacant. Durrett &amp; Levin, J. theor. Biol. 185 (1997).</div>
     <div class="layout">
-      <div class="sidebar">
+      <div class="sidebar wide">
         <div class="card">
-          <div class="field"><label>b1 (producer birth) <span class="readout" id="coliB1Val">3.0</span></label><input type="range" id="coliB1" min="0" max="8" step="0.1" value="3.0"></div>
-          <div class="field"><label>b2 (sensitive birth) <span class="readout" id="coliB2Val">4.0</span></label><input type="range" id="coliB2" min="0" max="8" step="0.1" value="4.0"></div>
-          <div class="field"><label>d1 (producer death) <span class="readout" id="coliD1Val">1.0</span></label><input type="range" id="coliD1" min="0" max="4" step="0.1" value="1.0"></div>
-          <div class="field"><label>d2 (sensitive death) <span class="readout" id="coliD2Val">1.0</span></label><input type="range" id="coliD2" min="0" max="4" step="0.1" value="1.0"></div>
-          <div class="field"><label>gamma (colicin toxicity) <span class="readout" id="coliGammaVal">3.0</span></label><input type="range" id="coliGamma" min="0" max="8" step="0.1" value="3.0"></div>
-          <div class="field"><label>dt (time step) <span class="readout" id="coliDtVal">0.05</span></label><input type="range" id="coliDt" min="0.005" max="0.2" step="0.005" value="0.05"></div>
-          <div class="field"><label>steps / frame <span class="readout" id="coliSpeedVal">1</span></label><input type="range" id="coliSpeed" min="1" max="20" step="1" value="1"></div>
-          <div class="field"><label>init density (producers) <span class="readout" id="coliP1Val">0.01</span></label><input type="range" id="coliP1" min="0" max="1" step="0.01" value="0.01"></div>
-          <div class="field"><label>init density (sensitive) <span class="readout" id="coliP2Val">0.50</span></label><input type="range" id="coliP2" min="0" max="1" step="0.01" value="0.50"></div>
-          <div class="field"><label>grid size (on reset) <span class="readout" id="coliSizeVal">100</span></label><input type="range" id="coliSize" min="20" max="200" step="10" value="100"></div>
-          <div class="field">
-            <label>Neighborhood</label>
-            <div class="toggle-group" id="coliNbToggle" style="width:100%;display:flex;">
-              <button data-nb="N0" class="active" style="flex:1;">4 (N0)</button>
-              <button data-nb="N1" style="flex:1;">8 (N1)</button>
+          <div class="fields-grid">
+            <div class="field"><label>b1 (producer birth) <span class="readout" id="coliB1Val">3.0</span></label><input type="range" id="coliB1" min="0" max="8" step="0.1" value="3.0"></div>
+            <div class="field"><label>b2 (sensitive birth) <span class="readout" id="coliB2Val">4.0</span></label><input type="range" id="coliB2" min="0" max="8" step="0.1" value="4.0"></div>
+            <div class="field"><label>d1 (producer death) <span class="readout" id="coliD1Val">1.0</span></label><input type="range" id="coliD1" min="0" max="4" step="0.1" value="1.0"></div>
+            <div class="field"><label>d2 (sensitive death) <span class="readout" id="coliD2Val">1.0</span></label><input type="range" id="coliD2" min="0" max="4" step="0.1" value="1.0"></div>
+            <div class="field"><label>gamma (colicin toxicity) <span class="readout" id="coliGammaVal">3.0</span></label><input type="range" id="coliGamma" min="0" max="8" step="0.1" value="3.0"></div>
+            <div class="field"><label>dt (time step) <span class="readout" id="coliDtVal">0.05</span></label><input type="range" id="coliDt" min="0.005" max="0.2" step="0.005" value="0.05"></div>
+            <div class="field"><label>steps / frame <span class="readout" id="coliSpeedVal">1</span></label><input type="range" id="coliSpeed" min="1" max="20" step="1" value="1"></div>
+            <div class="field"><label>init density (producers) <span class="readout" id="coliP1Val">0.01</span></label><input type="range" id="coliP1" min="0" max="1" step="0.01" value="0.01"></div>
+            <div class="field"><label>init density (sensitive) <span class="readout" id="coliP2Val">0.50</span></label><input type="range" id="coliP2" min="0" max="1" step="0.01" value="0.50"></div>
+            <div class="field"><label>grid size (on reset) <span class="readout" id="coliSizeVal">100</span></label><input type="range" id="coliSize" min="20" max="200" step="10" value="100"></div>
+            <div class="field" style="grid-column:1/3;">
+              <label>Neighborhood</label>
+              <div class="toggle-group" id="coliNbToggle" style="width:100%;display:flex;">
+                <button data-nb="N0" class="active" style="flex:1;">4 (N0)</button>
+                <button data-nb="N1" style="flex:1;">8 (N1)</button>
+              </div>
             </div>
           </div>
           <button class="btn primary" id="coliPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
@@ -253,13 +268,15 @@
         </div>
       </div>
       <div class="main">
-        <div class="card">
-          <canvas class="stage grid-canvas" id="coliGrid" width="500" height="500"></canvas>
-          <div class="info-line" id="coliInfo"></div>
-        </div>
-        <div class="card">
-          <h3 style="margin:0 0 8px;font-size:15px;">Densities vs. time</h3>
-          <canvas class="stage chart-canvas" id="coliChart" width="700" height="260"></canvas>
+        <div class="row">
+          <div class="card">
+            <canvas class="stage grid-canvas" id="coliGrid" width="380" height="380"></canvas>
+            <div class="info-line" id="coliInfo"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Densities vs. time</h3>
+            <canvas class="stage chart-canvas" id="coliChart" width="480" height="210"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -271,29 +288,33 @@
     <h2 class="sectiontitle">Mobility &amp; biodiversity (rock-paper-scissors)</h2>
     <div class="sectionsub">RED = A &nbsp; BLUE = B &nbsp; GOLD = C &nbsp; (A beats B beats C beats A) &nbsp; black = vacant. Reichenbach, Mobilia &amp; Frey, Nature 448 (2007).</div>
     <div class="layout">
-      <div class="sidebar">
+      <div class="sidebar wide">
         <div class="card">
-          <div class="field"><label>sigma (selection) <span class="readout" id="rpsSigmaVal">1.0</span></label><input type="range" id="rpsSigma" min="0" max="4" step="0.1" value="1.0"></div>
-          <div class="field"><label>mu (reproduction) <span class="readout" id="rpsMuVal">1.0</span></label><input type="range" id="rpsMu" min="0" max="4" step="0.1" value="1.0"></div>
-          <div class="field"><label>epsilon (exchange/mobility) <span class="readout" id="rpsEpsVal">1.0</span></label><input type="range" id="rpsEps" min="0" max="30" step="0.5" value="1.0"></div>
-          <div class="field"><label>dt (time step) <span class="readout" id="rpsDtVal">0.020</span></label><input type="range" id="rpsDt" min="0.001" max="0.05" step="0.001" value="0.02"></div>
-          <div class="field"><label>initial vacancy fraction <span class="readout" id="rpsVacVal">0.25</span></label><input type="range" id="rpsVac" min="0" max="0.9" step="0.05" value="0.25"></div>
-          <div class="field"><label>grid size (on reset) <span class="readout" id="rpsSizeVal">100</span></label><input type="range" id="rpsSize" min="20" max="200" step="2" value="100"></div>
-          <div class="field"><label>sweeps / frame <span class="readout" id="rpsSpeedVal">2</span></label><input type="range" id="rpsSpeed" min="1" max="20" step="1" value="2"></div>
+          <div class="fields-grid">
+            <div class="field"><label>sigma (selection) <span class="readout" id="rpsSigmaVal">1.0</span></label><input type="range" id="rpsSigma" min="0" max="4" step="0.1" value="1.0"></div>
+            <div class="field"><label>mu (reproduction) <span class="readout" id="rpsMuVal">1.0</span></label><input type="range" id="rpsMu" min="0" max="4" step="0.1" value="1.0"></div>
+            <div class="field"><label>epsilon (exchange/mobility) <span class="readout" id="rpsEpsVal">1.0</span></label><input type="range" id="rpsEps" min="0" max="30" step="0.5" value="1.0"></div>
+            <div class="field"><label>dt (time step) <span class="readout" id="rpsDtVal">0.020</span></label><input type="range" id="rpsDt" min="0.001" max="0.05" step="0.001" value="0.02"></div>
+            <div class="field"><label>initial vacancy fraction <span class="readout" id="rpsVacVal">0.25</span></label><input type="range" id="rpsVac" min="0" max="0.9" step="0.05" value="0.25"></div>
+            <div class="field"><label>grid size (on reset) <span class="readout" id="rpsSizeVal">100</span></label><input type="range" id="rpsSize" min="20" max="200" step="2" value="100"></div>
+            <div class="field"><label>sweeps / frame <span class="readout" id="rpsSpeedVal">2</span></label><input type="range" id="rpsSpeed" min="1" max="20" step="1" value="2"></div>
+          </div>
           <button class="btn primary" id="rpsPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
           <button class="btn" id="rpsReset" style="width:100%;margin-bottom:8px;">Reset</button>
           <button class="btn small" id="rpsStep" style="width:100%;">Single sweep</button>
         </div>
       </div>
       <div class="main">
-        <div class="card">
-          <canvas class="stage grid-canvas" id="rpsGrid" width="500" height="500"></canvas>
-          <div class="info-line" id="rpsInfo"></div>
-          <div class="status-line" id="rpsStatus"></div>
-        </div>
-        <div class="card">
-          <h3 style="margin:0 0 8px;font-size:15px;">Species densities vs. time</h3>
-          <canvas class="stage chart-canvas" id="rpsChart" width="700" height="260"></canvas>
+        <div class="row">
+          <div class="card">
+            <canvas class="stage grid-canvas" id="rpsGrid" width="380" height="380"></canvas>
+            <div class="info-line" id="rpsInfo"></div>
+            <div class="status-line" id="rpsStatus"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Species densities vs. time</h3>
+            <canvas class="stage chart-canvas" id="rpsChart" width="480" height="210"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -305,20 +326,22 @@
     <h2 class="sectiontitle">Local vs. global dispersal (C-S-R model)</h2>
     <div class="sectionsub">RED = C (producer) &nbsp; BLUE = S (sensitive) &nbsp; GREEN = R (resistant) &nbsp; white = vacant. Kerr, Riley, Feldman &amp; Bohannan, Nature 418 (2002).</div>
     <div class="layout">
-      <div class="sidebar">
+      <div class="sidebar wide">
         <div class="card">
-          <div class="field"><label>D_C (producer death) <span class="readout" id="csrDCVal">0.333</span></label><input type="range" id="csrDC" min="0" max="1" step="0.01" value="0.333"></div>
-          <div class="field"><label>D_S0 (sensitive baseline death) <span class="readout" id="csrDS0Val">0.250</span></label><input type="range" id="csrDS0" min="0" max="1" step="0.01" value="0.25"></div>
-          <div class="field"><label>D_R (resistant death) <span class="readout" id="csrDRVal">0.313</span></label><input type="range" id="csrDR" min="0" max="1" step="0.01" value="0.3125"></div>
-          <div class="field"><label>tau (colicin toxicity) <span class="readout" id="csrTauVal">0.75</span></label><input type="range" id="csrTau" min="0" max="2" step="0.05" value="0.75"></div>
-          <div class="field"><label>initial vacancy fraction <span class="readout" id="csrVacVal">0.25</span></label><input type="range" id="csrVac" min="0" max="0.9" step="0.05" value="0.25"></div>
-          <div class="field"><label>grid size (on reset) <span class="readout" id="csrSizeVal">150</span></label><input type="range" id="csrSize" min="20" max="250" step="10" value="150"></div>
-          <div class="field"><label>epochs / frame <span class="readout" id="csrSpeedVal">1</span></label><input type="range" id="csrSpeed" min="1" max="20" step="1" value="1"></div>
-          <div class="field">
-            <label>Neighborhood</label>
-            <div class="toggle-group" id="csrNbToggle" style="width:100%;display:flex;">
-              <button data-nb="local" class="active" style="flex:1;">local (8)</button>
-              <button data-nb="global" style="flex:1;">global</button>
+          <div class="fields-grid">
+            <div class="field"><label>D_C (producer death) <span class="readout" id="csrDCVal">0.333</span></label><input type="range" id="csrDC" min="0" max="1" step="0.01" value="0.333"></div>
+            <div class="field"><label>D_S0 (sensitive baseline death) <span class="readout" id="csrDS0Val">0.250</span></label><input type="range" id="csrDS0" min="0" max="1" step="0.01" value="0.25"></div>
+            <div class="field"><label>D_R (resistant death) <span class="readout" id="csrDRVal">0.313</span></label><input type="range" id="csrDR" min="0" max="1" step="0.01" value="0.3125"></div>
+            <div class="field"><label>tau (colicin toxicity) <span class="readout" id="csrTauVal">0.75</span></label><input type="range" id="csrTau" min="0" max="2" step="0.05" value="0.75"></div>
+            <div class="field"><label>initial vacancy fraction <span class="readout" id="csrVacVal">0.25</span></label><input type="range" id="csrVac" min="0" max="0.9" step="0.05" value="0.25"></div>
+            <div class="field"><label>grid size (on reset) <span class="readout" id="csrSizeVal">150</span></label><input type="range" id="csrSize" min="20" max="250" step="10" value="150"></div>
+            <div class="field"><label>epochs / frame <span class="readout" id="csrSpeedVal">1</span></label><input type="range" id="csrSpeed" min="1" max="20" step="1" value="1"></div>
+            <div class="field" style="grid-column:1/3;">
+              <label>Neighborhood</label>
+              <div class="toggle-group" id="csrNbToggle" style="width:100%;display:flex;">
+                <button data-nb="local" class="active" style="flex:1;">local (8)</button>
+                <button data-nb="global" style="flex:1;">global</button>
+              </div>
             </div>
           </div>
           <button class="btn primary" id="csrPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
@@ -327,14 +350,16 @@
         </div>
       </div>
       <div class="main">
-        <div class="card">
-          <canvas class="stage grid-canvas" id="csrGrid" width="500" height="500"></canvas>
-          <div class="info-line" id="csrInfo"></div>
-          <div class="status-line" id="csrStatus"></div>
-        </div>
-        <div class="card">
-          <h3 style="margin:0 0 8px;font-size:15px;">Strain densities vs. time</h3>
-          <canvas class="stage chart-canvas" id="csrChart" width="700" height="260"></canvas>
+        <div class="row">
+          <div class="card">
+            <canvas class="stage grid-canvas" id="csrGrid" width="380" height="380"></canvas>
+            <div class="info-line" id="csrInfo"></div>
+            <div class="status-line" id="csrStatus"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Strain densities vs. time</h3>
+            <canvas class="stage chart-canvas" id="csrChart" width="480" height="210"></canvas>
+          </div>
         </div>
       </div>
     </div>
