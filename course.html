@@ -624,7 +624,7 @@ const PlantModule = (function(){
     const chart=document.getElementById('plantChart');
     const nStar=predictedEq(b,d,g);
     const nMax=Math.max(10, ...nHist, Number.isFinite(nStar)?nStar:0)*1.15;
-    const tMax=Math.max(10, t);
+    const tMax=Math.max(t*1.05, 1e-3);
     drawSeriesChart(chart,{
       series:[{label:'population',color:'#000',data:tHist.map((tt,i)=>({x:tt,y:nHist[i]}))}],
       xMax:tMax, yMin:0, yMax:nMax,
@@ -771,7 +771,7 @@ const CP1DModule = (function(){
     const x0=sweepHist[0]||0;
     drawSeriesChart(chart,{
       series:[{label:'ρ(t)',color:'#1d5fd6',data:sweepHist.map((sw,i)=>({x:sw-x0,y:rhoHist[i]}))}],
-      xMax:Math.max(10, (sweepHist[sweepHist.length-1]||0)-x0),
+      xMax:Math.max(((sweepHist[sweepHist.length-1]||0)-x0)*1.05, 1),
       yMin:-0.02, yMax:1.02,
       xlabel:'sweep (≈ events / N)', ylabel:'ρ(t)'
     });
@@ -919,7 +919,7 @@ const ColicinModule = (function(){
   function render(){
     renderGrid(document.getElementById('coliGrid'), grid, size, PALETTE);
     const chart=document.getElementById('coliChart');
-    const tMax=Math.max(10, time);
+    const tMax=Math.max(time*1.05, 1e-3);
     drawSeriesChart(chart,{
       series:[
         {label:'producers (1)',color:'#dc1e1e',data:histT.map((tt,i)=>({x:tt,y:histF1[i]}))},
@@ -1121,7 +1121,7 @@ const RPSModule = (function(){
   function render(){
     renderGrid(document.getElementById('rpsGrid'), grid, L, PALETTE);
     const chart=document.getElementById('rpsChart');
-    const tMax=Math.max(10,time);
+    const tMax=Math.max(time*1.05, 1e-3);
     drawSeriesChart(chart,{
       series:[
         {label:'A',color:'#dc1414',data:histT.map((tt,i)=>({x:tt,y:histA[i]}))},
@@ -1285,7 +1285,7 @@ const CSRModule = (function(){
   function render(){
     renderGrid(document.getElementById('csrGrid'), grid, size, PALETTE);
     const chart=document.getElementById('csrChart');
-    const tMax=Math.max(10,time);
+    const tMax=Math.max(time*1.05, 1e-3);
     drawSeriesChart(chart,{
       series:[
         {label:'C',color:'#dc1414',data:histT.map((tt,i)=>({x:tt,y:histC[i]}))},
