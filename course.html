@@ -2661,10 +2661,12 @@ const HabitatModule = (function(){
   }
   function positionsAt(trajectories,tQuery){
     return trajectories.map(tr=>{
-      let lo=0, hi=tr.times.length-1;
-      if(tQuery<tr.times[0]) return tr.patches[0];
-      while(hi-lo>1){ const mid=(lo+hi)>>1; if(tr.times[mid]<=tQuery) lo=mid; else hi=mid; }
-      return tr.patches[lo];
+      const times=tr.times, patches=tr.patches, n=times.length;
+      if(tQuery<=times[0]) return patches[0];
+      if(tQuery>=times[n-1]) return patches[n-1];
+      let lo=0, hi=n-1;
+      while(hi-lo>1){ const mid=(lo+hi)>>1; if(times[mid]<=tQuery) lo=mid; else hi=mid; }
+      return patches[lo];
     });
   }
 
