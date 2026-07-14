@@ -66,7 +66,7 @@
 
   footer{margin-top:26px;font-size:12.5px;color:var(--muted);}
 
-  .home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-top:16px;}
+  .home-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;}
   .home-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;}
   .home-card h3{margin:0;font-size:18px;}
   .home-card p{margin:0;color:var(--muted);font-size:14px;flex:1;}
@@ -106,40 +106,16 @@
     </div>
     <div class="home-grid">
       <div class="home-card">
-        <h3>Off-lattice logistic model</h3>
-        <p>A birth-death process with density-dependent competition among individuals in continuous space. Choose between Gaussian and top-hat competition kernels and watch clustering vs. regularity emerge.</p>
-        <div class="ref">Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025)</div>
-        <button class="btn primary" data-target="panelPlant">Open</button>
-      </div>
-      <div class="home-card">
         <h3>On-lattice logistic model (1D)</h3>
         <p>The classic birth-death interacting particle system on a ring of sites.</p>
         <div class="ref">Classic interacting-particle-system model</div>
         <button class="btn primary" data-target="panelCP1D">Open</button>
       </div>
       <div class="home-card">
-        <h3>Colicin allelopathy</h3>
-        <p>Producer vs. sensitive cells on a lattice. Producers poison their neighbors — watch clumps of producers take over, or lose, depending on toxicity.</p>
-        <div class="ref">Durrett &amp; Levin, J. Theor. Biol. 185 (1997)</div>
-        <button class="btn primary" data-target="panelColicin">Open</button>
-      </div>
-      <div class="home-card">
-        <h3>Mobility &amp; biodiversity</h3>
-        <p>Spatial rock-paper-scissors with selection, reproduction, and mobility (exchange). Cross the critical mobility and watch spiral waves collapse into a single surviving species.</p>
-        <div class="ref">Reichenbach, Mobilia &amp; Frey, Nature 448 (2007)</div>
-        <button class="btn primary" data-target="panelRPS">Open</button>
-      </div>
-      <div class="home-card">
-        <h3>Local vs. global dispersal</h3>
-        <p>The E. coli C-S-R rock-paper-scissors game. Flip between local (Moore neighborhood) and well-mixed interaction and see biodiversity collapse under global dispersal.</p>
-        <div class="ref">Kerr, Riley, Feldman &amp; Bohannan, Nature 418 (2002)</div>
-        <button class="btn primary" data-target="panelCSR">Open</button>
-      </div>
-      <div class="home-card">
-        <h3>Step-selection functions</h3>
-        <p>Simulate an animal's movement through habitat, then try to recover its hidden habitat-preference weights from the simulated steps.</p>
-        <div class="ref">Step-Selection Functions for Modeling Animal Movement</div>
-        <button class="btn primary" data-target="panelSSF">Open</button>
+        <h3>Off-lattice logistic model</h3>
+        <p>A birth-death process with density-dependent competition among individuals in continuous space. Choose between Gaussian and top-hat competition kernels and watch clustering vs. regularity emerge.</p>
+        <div class="ref">Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025)</div>
+        <button class="btn primary" data-target="panelPlant">Open</button>
       </div>
       <div class="home-card">
         <h3>Colicin allelopathy (non-spatial)</h3>
@@ -148,10 +124,22 @@
         <button class="btn primary" data-target="panelColicinNS">Open</button>
       </div>
       <div class="home-card">
-        <h3>Semiarid vegetation patterning</h3>
-        <p>A reaction-diffusion-advection model of water and plant biomass on a hillslope. Tune rainfall, advection, and diffusion to grow banded or spotted vegetation patterns, tracked live on a bifurcation diagram.</p>
-        <div class="ref">Klausmeier, Science 284 (1999)</div>
-        <button class="btn primary" data-target="panelKlausmeier">Open</button>
+        <h3>Colicin allelopathy (spatial)</h3>
+        <p>Producer vs. sensitive cells on a lattice. Producers poison their neighbors — watch clumps of producers take over, or lose, depending on toxicity.</p>
+        <div class="ref">Durrett &amp; Levin, J. Theor. Biol. 185 (1997)</div>
+        <button class="btn primary" data-target="panelColicin">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Local vs. global dispersal</h3>
+        <p>The E. coli C-S-R rock-paper-scissors game. Flip between local (Moore neighborhood) and well-mixed interaction and see biodiversity collapse under global dispersal.</p>
+        <div class="ref">Kerr, Riley, Feldman &amp; Bohannan, Nature 418 (2002)</div>
+        <button class="btn primary" data-target="panelCSR">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Mobility &amp; biodiversity</h3>
+        <p>Spatial rock-paper-scissors with selection, reproduction, and mobility (exchange). Cross the critical mobility and watch spiral waves collapse into a single surviving species.</p>
+        <div class="ref">Reichenbach, Mobilia &amp; Frey, Nature 448 (2007)</div>
+        <button class="btn primary" data-target="panelRPS">Open</button>
       </div>
       <div class="home-card">
         <h3>Random walk &rarr; diffusion equation</h3>
@@ -164,6 +152,18 @@
         <p>Beetles moving along a line of patches of varying quality. Compare a quality-aware Markov chain against a passive-diffusion null model and see habitat selection emerge from movement rates alone.</p>
         <div class="ref">Kareiva, Ecological Monographs 52 (1982)</div>
         <button class="btn primary" data-target="panelHabitat">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Step-selection functions</h3>
+        <p>Simulate an animal's movement through habitat, then try to recover its hidden habitat-preference weights from the simulated steps.</p>
+        <div class="ref">Step-Selection Functions for Modeling Animal Movement</div>
+        <button class="btn primary" data-target="panelSSF">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Semiarid vegetation patterning</h3>
+        <p>A reaction-diffusion-advection model of water and plant biomass on a hillslope. Tune rainfall, advection, and diffusion to grow banded or spotted vegetation patterns, tracked live on a bifurcation diagram.</p>
+        <div class="ref">Klausmeier, Science 284 (1999)</div>
+        <button class="btn primary" data-target="panelKlausmeier">Open</button>
       </div>
     </div>
   </div>
