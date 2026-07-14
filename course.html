@@ -75,6 +75,22 @@
   .sectiontitle{font-size:19px;margin:0 0 3px;}
   .sectionsub{color:var(--muted);font-size:13px;margin-bottom:10px;}
   iframe.ssfframe{width:100%;height:1400px;border:1px solid var(--border);border-radius:12px;background:#fff;}
+
+  .subtabs{display:flex;gap:8px;margin-bottom:12px;}
+  .subtabbtn{font-size:14px;font-weight:700;padding:9px 16px;border-radius:8px 8px 0 0;border:1px solid var(--border);background:#f1ede2;color:var(--muted);cursor:pointer;border-bottom:none;}
+  .subtabbtn.active{background:var(--panel);color:var(--ink);}
+  .subpanel{display:none;}
+  .subpanel.active{display:block;}
+
+  select{width:100%;padding:7px 9px;border:1px solid var(--border2);border-radius:6px;font-size:14px;background:#fff;color:var(--ink);}
+
+  .barrow{display:flex;align-items:center;margin:7px 0;font-size:13px;}
+  .barlabel{width:78px;font-weight:700;flex-shrink:0;font-variant-numeric:tabular-nums;}
+  .bartrack{position:relative;height:20px;background:#f1efe9;border-radius:5px;flex:1;margin:0 8px;}
+  .barfill{position:absolute;top:2px;bottom:2px;left:0;border-radius:3px;}
+  .barvalue{width:44px;text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0;}
+  .legend-inline{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:6px 0 4px;}
+  .legend-inline .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
 </style>
 </head>
 <body>
@@ -86,7 +102,7 @@
   <!-- ================= HOME ================= -->
   <div class="panel active" id="panelHome">
     <div class="card">
-      <p style="margin:0;color:var(--muted)">Seven interactive simulations of classic models in spatial ecology and evolutionary game theory, all running locally in your browser — no installation needed. Pick a demo below.</p>
+      <p style="margin:0;color:var(--muted)">Eleven interactive simulations of classic models in spatial ecology and evolutionary game theory, all running locally in your browser — no installation needed. Pick a demo below.</p>
     </div>
     <div class="home-grid">
       <div class="home-card">
@@ -124,6 +140,30 @@
         <p>Simulate an animal's movement through habitat, then try to recover its hidden habitat-preference weights from the simulated steps.</p>
         <div class="ref">Step-Selection Functions for Modeling Animal Movement</div>
         <button class="btn primary" data-target="panelSSF">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Colicin allelopathy (non-spatial)</h3>
+        <p>The mean-field limit of the colicin lattice model: a phase portrait of producer vs. sensitive frequencies. Drag the cost and toxicity sliders to flip between monostable dominance and bistability, and click anywhere to launch a new trajectory.</p>
+        <div class="ref">Iwasa, Nakamaru &amp; Levin, Evolutionary Ecology 12 (1998)</div>
+        <button class="btn primary" data-target="panelColicinNS">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Semiarid vegetation patterning</h3>
+        <p>A reaction-diffusion-advection model of water and plant biomass on a hillslope. Tune rainfall, advection, and diffusion to grow banded or spotted vegetation patterns, tracked live on a bifurcation diagram.</p>
+        <div class="ref">Klausmeier, Science 284 (1999)</div>
+        <button class="btn primary" data-target="panelKlausmeier">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Random walk &rarr; diffusion equation</h3>
+        <p>Watch discrete random walkers fan out into a Gaussian, then compare the same walk against a finite-difference solution of the drift-diffusion PDE it converges to.</p>
+        <div class="ref">Classic random-walk / diffusion-limit demo</div>
+        <button class="btn primary" data-target="panelRW">Open</button>
+      </div>
+      <div class="home-card">
+        <h3>Habitat selection via movement</h3>
+        <p>Beetles moving along a line of patches of varying quality. Compare a quality-aware Markov chain against a passive-diffusion null model and see habitat selection emerge from movement rates alone.</p>
+        <div class="ref">Kareiva, Ecological Monographs 52 (1982)</div>
+        <button class="btn primary" data-target="panelHabitat">Open</button>
       </div>
     </div>
   </div>
@@ -365,6 +405,214 @@
     </div>
   </div>
 
+  <!-- ================= COLICIN NON-SPATIAL ================= -->
+  <div class="panel" id="panelColicinNS">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Colicin allelopathy — non-spatial (mean-field) model</h2>
+    <div class="sectionsub">Phase portrait of the complete-mixing limit of the colicin lattice model. Iwasa, Nakamaru &amp; Levin, Evolutionary Ecology 12 (1998), Eq. 4.</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>&beta;<sub>2</sub> (S birth rate; cost c=&beta;<sub>2</sub>&minus;&beta;<sub>1</sub>) <span class="readout" id="coliNSBeta2Val">3.00</span></label><input type="range" id="coliNSBeta2" min="3" max="10" step="0.05" value="3.0"></div>
+          <div class="field"><label>&gamma; (colicin effectiveness) <span class="readout" id="coliNSGammaVal">2.0</span></label><input type="range" id="coliNSGamma" min="0" max="20" step="0.1" value="2.0"></div>
+          <button class="btn" id="coliNSReset" style="width:100%;margin-top:6px;">Reset trajectories</button>
+          <div class="hint" style="margin-top:10px;">Fixed: &beta;<sub>1</sub>=3.0, &delta;<sub>1</sub>=&delta;<sub>2</sub>=1.0.</div>
+          <div class="hint">Click anywhere inside the phase portrait to launch a new trajectory from that starting point (&rho;<sub>1</sub>+&rho;<sub>2</sub>&lt;1).</div>
+          <div class="status-line" id="coliNSRegime"></div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="row">
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Phase portrait (&rho;<sub>1</sub> vs. &rho;<sub>2</sub>)</h3>
+            <canvas class="stage" id="coliNSPhase" width="420" height="420" style="cursor:crosshair;"></canvas>
+            <div class="legend-inline">
+              <span><span class="dot" style="background:#242220"></span>stable node</span>
+              <span><span class="dot" style="background:#fff;border:1px solid #242220"></span>unstable node</span>
+              <span><span class="dot" style="background:#e8971c"></span>saddle</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Population dynamics for the trajectories at left</h3>
+            <canvas class="stage chart-canvas" id="coliNSChart" width="480" height="380"></canvas>
+            <div class="legend-inline">
+              <span><span class="dot" style="background:#C0392B"></span>&rho;<sub>1</sub> (C, producer)</span>
+              <span><span class="dot" style="background:#3B6EA5"></span>&rho;<sub>2</sub> (S, sensitive)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= KLAUSMEIER VEGETATION ================= -->
+  <div class="panel" id="panelKlausmeier">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Semiarid vegetation patterning</h2>
+    <div class="sectionsub">Water-biomass reaction-diffusion-advection model on a periodic hillslope. Klausmeier, "Regular and Irregular Patterns in Semiarid Vegetation", Science 284 (1999).</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>a (rainfall) <span class="readout" id="klausAVal">2.00</span></label><input type="range" id="klausA" min="0.05" max="5" step="0.05" value="2.0"></div>
+          <div class="field"><label>v (advection speed) <span class="readout" id="klausVVal">150</span></label><input type="range" id="klausV" min="0" max="300" step="5" value="150"></div>
+          <div class="field"><label>D<sub>n</sub> (plant diffusion) <span class="readout" id="klausDnVal">1.00</span></label><input type="range" id="klausDn" min="0" max="5" step="0.1" value="1.0"></div>
+          <div class="field"><label>D<sub>w</sub> (water diffusion) <span class="readout" id="klausDwVal">10</span></label><input type="range" id="klausDw" min="0" max="100" step="1" value="10"></div>
+          <div class="field"><label>m (plant mortality) <span class="readout" id="klausMVal">0.45</span></label><input type="range" id="klausM" min="0.05" max="1.5" step="0.05" value="0.45"></div>
+          <div class="field"><label>R (growth yield) <span class="readout" id="klausRVal">1.00</span></label><input type="range" id="klausR" min="0.1" max="3" step="0.1" value="1.0"></div>
+          <button class="btn primary" id="klausPause" style="width:100%;margin:8px 0;">Pause</button>
+          <button class="btn" id="klausReset" style="width:100%;">Reset field</button>
+          <div class="hint" style="margin-top:10px;">Reset field reseeds the domain near the current homogeneous equilibrium (plus small noise) so a fresh pattern can develop. The red dot on the bifurcation diagram tracks the spatial average of N over the whole domain.</div>
+          <div class="info-line" id="klausTime">t = 0.0</div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="row">
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Plant biomass N(X,Y,t)</h3>
+            <canvas class="stage grid-canvas" id="klausField" width="380" height="380"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Bifurcation diagram (non-spatial model)</h3>
+            <canvas class="stage chart-canvas" id="klausBifurc" width="480" height="380"></canvas>
+            <div class="legend-inline">
+              <span><span class="dot" style="background:#2e7d32"></span>vegetated, stable</span>
+              <span><span class="dot" style="background:#8bc34a"></span>vegetated, unstable</span>
+              <span><span class="dot" style="background:#8a5a2b"></span>bare soil, stable</span>
+              <span><span class="dot" style="background:#d7263d"></span>2D sim. (mean N)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RANDOM WALK / DIFFUSION ================= -->
+  <div class="panel" id="panelRW">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Random walk &rarr; diffusion equation</h2>
+    <div class="sectionsub">A discrete random walk, and the drift-diffusion PDE it converges to in the continuum limit.</div>
+    <div class="subtabs">
+      <button class="subtabbtn active" id="rwTab1Btn">1. Random walk intuition</button>
+      <button class="subtabbtn" id="rwTab2Btn">2. Diffusion eq. vs. random walk</button>
+    </div>
+
+    <div class="subpanel active" id="rwSubpanel1">
+      <div class="layout">
+        <div class="sidebar">
+          <div class="card">
+            <div class="field"><label>Number of walkers <span class="readout" id="rw1NWalkersVal">200</span></label><input type="range" id="rw1NWalkers" min="1" max="2000" step="1" value="200"></div>
+            <div class="field"><label>Number of steps <span class="readout" id="rw1NStepsVal">500</span></label><input type="range" id="rw1NSteps" min="10" max="2000" step="10" value="500"></div>
+            <div class="field"><label>P(step right) <span class="readout" id="rw1PVal">0.50</span></label><input type="range" id="rw1P" min="0" max="1" step="0.01" value="0.5"></div>
+            <div class="field"><label>Trajectories drawn <span class="readout" id="rw1NShownVal">30</span></label><input type="range" id="rw1NShown" min="1" max="200" step="1" value="30"></div>
+            <div class="field"><label>Histogram bins (approx.) <span class="readout" id="rw1NBinsVal">20</span></label><input type="range" id="rw1NBins" min="5" max="60" step="1" value="20"></div>
+            <button class="btn primary" id="rw1Resim" style="width:100%;margin:6px 0;">Re-simulate (new draws)</button>
+            <div class="field" style="margin-top:10px;"><label>Step shown <span class="readout" id="rw1TVal">500</span></label><input type="range" id="rw1T" min="0" max="500" step="1" value="500"></div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin:8px 0;"><input type="checkbox" id="rw1Gaussian" checked> Overlay Gaussian fit</label>
+            <button class="btn" id="rw1Play" style="width:100%;">&#9654; Play</button>
+            <div class="info-line" id="rw1Stats"></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Sample trajectories</h3>
+            <canvas class="stage chart-canvas" id="rw1Traj" width="480" height="220"></canvas>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <h3 style="margin:0 0 8px;font-size:15px;">Histogram of positions at this step</h3>
+            <canvas class="stage chart-canvas" id="rw1Hist" width="480" height="260"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpanel" id="rwSubpanel2">
+      <div class="layout">
+        <div class="sidebar">
+          <div class="card">
+            <div class="field"><label>Number of walkers <span class="readout" id="rw2NWalkersVal">2000</span></label><input type="range" id="rw2NWalkers" min="100" max="5000" step="100" value="2000"></div>
+            <div class="field"><label>Number of steps <span class="readout" id="rw2NStepsVal">500</span></label><input type="range" id="rw2NSteps" min="10" max="1000" step="10" value="500"></div>
+            <div class="field"><label>Step size &Delta;x <span class="readout" id="rw2DxVal">1.0</span></label><input type="range" id="rw2Dx" min="0.1" max="3" step="0.1" value="1.0"></div>
+            <div class="field"><label>Time increment &Delta;t <span class="readout" id="rw2DtVal">1.0</span></label><input type="range" id="rw2Dt" min="0.1" max="3" step="0.1" value="1.0"></div>
+            <div class="field"><label>P(step right) [0.5 = pure diffusion] <span class="readout" id="rw2PVal">0.50</span></label><input type="range" id="rw2P" min="0" max="1" step="0.01" value="0.5"></div>
+            <div class="field"><label>Histogram bins (approx.) <span class="readout" id="rw2NBinsVal">20</span></label><input type="range" id="rw2NBins" min="5" max="60" step="1" value="20"></div>
+            <button class="btn primary" id="rw2Resim" style="width:100%;margin:6px 0;">Re-simulate (new draws)</button>
+            <div class="field" style="margin-top:10px;"><label>Step shown <span class="readout" id="rw2TVal">500</span></label><input type="range" id="rw2T" min="1" max="500" step="1" value="500"></div>
+            <button class="btn" id="rw2Play" style="width:100%;margin-bottom:8px;">&#9654; Play</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin:8px 0;"><input type="checkbox" id="rw2Analytic" checked> Also show closed-form Gaussian</label>
+            <div class="info-line" id="rw2Info"></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Random walk histogram vs. diffusion PDE</h3>
+            <canvas class="stage chart-canvas" id="rw2Hist" width="480" height="380"></canvas>
+            <div class="legend-inline">
+              <span><span class="dot" style="background:#3b6ea5"></span>random walk histogram</span>
+              <span><span class="dot" style="background:#2e8b3d"></span>diffusion PDE (finite-difference)</span>
+              <span><span class="dot" style="background:#c0392b"></span>closed-form Gaussian</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HABITAT SELECTION (KAREIVA) ================= -->
+  <div class="panel" id="panelHabitat">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Habitat selection via movement</h2>
+    <div class="sectionsub">A linear array of patches; movement rate depends on local patch quality. Kareiva, "Experimental and Mathematical Analyses of Herbivore Movement", Ecological Monographs 52 (1982).</div>
+    <div class="layout">
+      <div class="sidebar wide">
+        <div class="card">
+          <div class="fields-grid">
+            <div class="field"><label>Patches (S) <span class="readout" id="habSVal">9</span></label><input type="range" id="habS" min="3" max="15" step="1" value="9"></div>
+            <div class="field"><label>Distance (m) <span class="readout" id="habDistVal">3.0</span></label><input type="range" id="habDist" min="1" max="12" step="0.5" value="3.0"></div>
+            <div class="field"><label>Mobility k <span class="readout" id="habMobVal">1.0</span></label><input type="range" id="habMob" min="0.1" max="5" step="0.1" value="1.0"></div>
+            <div class="field"><label>Quality effect &alpha; <span class="readout" id="habAlphaVal">0.85</span></label><input type="range" id="habAlpha" min="0" max="0.99" step="0.01" value="0.85"></div>
+          </div>
+          <div class="hint" style="margin-bottom:8px;">rate<sub>i</sub> = k/distance &times; (1 &minus; &alpha;&middot;quality<sub>i</sub>)</div>
+          <div class="field">
+            <label>Patch quality pattern</label>
+            <select id="habPreset">
+              <option>Homogeneous</option>
+              <option selected>Alternating (lush/stunted)</option>
+              <option>Gradient (stunted -&gt; lush)</option>
+              <option>One damaged patch (center)</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div class="field" id="habCustomRow" style="display:none;"></div>
+          <div class="fields-grid">
+            <div class="field"><label>Release patch <span class="readout" id="habReleaseVal">4</span></label><input type="range" id="habRelease" min="0" max="8" step="1" value="4"></div>
+            <div class="field"><label>Walkers/model <span class="readout" id="habWalkersVal">1000</span></label><input type="range" id="habWalkers" min="50" max="3000" step="50" value="1000"></div>
+            <div class="field"><label>Max sim. time <span class="readout" id="habTMaxVal">50</span></label><input type="range" id="habTMax" min="1" max="200" step="1" value="50"></div>
+          </div>
+          <button class="btn primary" id="habResim" style="width:100%;margin:8px 0;">Re-simulate</button>
+          <div class="field"><label>Time shown <span class="readout" id="habTVal">50.0</span></label><input type="range" id="habT" min="0.1" max="50" step="0.1" value="50"></div>
+          <button class="btn" id="habPlay" style="width:100%;margin:8px 0;">&#9654; Play</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;"><input type="checkbox" id="habShowNull" checked> Show passive-diffusion null model</label>
+          <div class="info-line" id="habInfo" style="margin-top:10px;"></div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">Patch quality (0 = stunted, 1 = lush)</h3>
+          <div id="habQuality"></div>
+        </div>
+        <div class="card" style="margin-top:12px;">
+          <h3 style="margin:0 0 8px;font-size:15px;">Population distribution at time t</h3>
+          <div id="habDistChart"></div>
+          <div class="legend-inline">
+            <span><span class="dot" style="background:#2e8b3d"></span>habitat-selection (simulated)</span>
+            <span><span class="dot" style="background:#1b5e20"></span>habitat-selection (master eq.)</span>
+            <span><span class="dot" style="background:#9e9e9e"></span>passive-diffusion null</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= SSF (embedded, byte-identical) ================= -->
   <div class="panel" id="panelSSF">
     <button class="btn backbtn" data-home>&larr; Back to menu</button>
@@ -409,6 +657,7 @@ function drawSeriesChart(canvas, opts){
   const xMax=opts.xMax||10, yMin=opts.yMin!==undefined?opts.yMin:0, yMax=opts.yMax!==undefined?opts.yMax:1;
   const xlabel=opts.xlabel||'', ylabel=opts.ylabel||'';
   const refLines=opts.refLines||[];
+  const points=opts.points||[];
   const ctx=canvas.getContext('2d');
   const w=canvas.width, h=canvas.height;
   ctx.clearRect(0,0,w,h);
@@ -439,21 +688,38 @@ function drawSeriesChart(canvas, opts){
   ctx.strokeStyle='#d8d2c3'; ctx.lineWidth=1;
   ctx.strokeRect(padL+0.5,padT+0.5,plotW,plotH);
   refLines.forEach(rl=>{
-    if(rl.y===null||rl.y===undefined||Number.isNaN(rl.y)) return;
     ctx.save();
     ctx.strokeStyle=rl.color||'#999'; ctx.setLineDash(rl.dash||[5,4]); ctx.lineWidth=1.3;
-    ctx.beginPath(); ctx.moveTo(padL,Y(rl.y)); ctx.lineTo(padL+plotW,Y(rl.y)); ctx.stroke();
+    if(rl.y!==undefined && rl.y!==null && !Number.isNaN(rl.y)){
+      ctx.beginPath(); ctx.moveTo(padL,Y(rl.y)); ctx.lineTo(padL+plotW,Y(rl.y)); ctx.stroke();
+    } else if(rl.x!==undefined && rl.x!==null && !Number.isNaN(rl.x)){
+      ctx.beginPath(); ctx.moveTo(X(rl.x),padT); ctx.lineTo(X(rl.x),padT+plotH); ctx.stroke();
+    }
     ctx.restore();
   });
   series.forEach(s=>{
     if(!s.data || s.data.length===0) return;
+    ctx.save();
+    if(s.alpha!==undefined) ctx.globalAlpha=s.alpha;
     ctx.beginPath();
-    ctx.strokeStyle=s.color; ctx.lineWidth=1.6;
+    ctx.strokeStyle=s.color; ctx.lineWidth=s.width||1.6;
+    if(s.dash) ctx.setLineDash(s.dash);
     s.data.forEach((p,i)=>{
       const px=X(p.x), py=Y(p.y);
       if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
     });
     ctx.stroke();
+    ctx.restore();
+  });
+  points.forEach(p=>{
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(X(p.x),Y(p.y),p.r||6,0,Math.PI*2);
+    ctx.fillStyle=p.color||'#d7263d';
+    ctx.fill();
+    ctx.lineWidth=1.4; ctx.strokeStyle=p.stroke||'#000';
+    ctx.stroke();
+    ctx.restore();
   });
   ctx.fillStyle='#736c60'; ctx.font='10px sans-serif'; ctx.strokeStyle='#a49d8f'; ctx.lineWidth=1;
   ctx.textAlign='center'; ctx.textBaseline='top';
@@ -483,10 +749,106 @@ function drawSeriesChart(canvas, opts){
   ctx.textAlign='left';
   let lx=padL+8, ly=padT+12;
   series.forEach(s=>{
+    if(!s.label) return;
     ctx.fillStyle=s.color; ctx.fillRect(lx,ly-8,10,3);
     ctx.fillStyle='#242220'; ctx.fillText(s.label, lx+14, ly);
     lx+=18+ctx.measureText(s.label).width+16;
   });
+  return {X,Y,padL,padR,padT,padB,plotW,plotH};
+}
+
+// ============================================================
+// Shared: continuous-field heatmap renderer (YlGn-like colormap)
+// ============================================================
+function heatColor(t){
+  t=Math.max(0,Math.min(1,t));
+  const stops=[[255,255,229],[194,227,143],[120,198,121],[35,132,67],[0,69,41]];
+  const seg=t*(stops.length-1);
+  const i=Math.min(stops.length-2, Math.floor(seg));
+  const f=seg-i;
+  const a=stops[i], b=stops[i+1];
+  return [Math.round(a[0]+(b[0]-a[0])*f), Math.round(a[1]+(b[1]-a[1])*f), Math.round(a[2]+(b[2]-a[2])*f)];
+}
+function renderHeatmap(canvas, data, W, H, vmin, vmax){
+  let off=canvas._offCanvasHeat;
+  if(!off || off.width!==W || off.height!==H){
+    off=document.createElement('canvas'); off.width=W; off.height=H;
+    canvas._offCanvasHeat=off;
+  }
+  const octx=off.getContext('2d');
+  const img=octx.createImageData(W,H);
+  const range=(vmax-vmin)||1;
+  for(let i=0;i<W*H;i++){
+    const t=(data[i]-vmin)/range;
+    const c=heatColor(t);
+    const o=i*4;
+    img.data[o]=c[0]; img.data[o+1]=c[1]; img.data[o+2]=c[2]; img.data[o+3]=255;
+  }
+  octx.putImageData(img,0,0);
+  const ctx=canvas.getContext('2d');
+  ctx.imageSmoothingEnabled=true;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(off,0,0,canvas.width,canvas.height);
+}
+
+// ============================================================
+// Shared: histogram (bars) + overlaid curve(s) chart
+// ============================================================
+function drawHistogramChart(canvas, opts){
+  const edges=opts.edges||[], counts=opts.counts||[];
+  const xMin=opts.xMin, xMax=opts.xMax;
+  const yMax=opts.yMax||1;
+  const xlabel=opts.xlabel||'', ylabel=opts.ylabel||'';
+  const curves=opts.curves||[];
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padL=50,padR=12,padT=14,padB=34;
+  const plotW=Math.max(10,w-padL-padR), plotH=Math.max(10,h-padT-padB);
+  const X=x=>padL+((x-xMin)/((xMax-xMin)||1))*plotW;
+  const Y=y=>padT+plotH-((y/yMax)||0)*plotH;
+  ctx.strokeStyle='#d8d2c3'; ctx.lineWidth=1;
+  ctx.strokeRect(padL+0.5,padT+0.5,plotW,plotH);
+  ctx.fillStyle='rgba(59,110,165,0.55)'; ctx.strokeStyle='rgba(59,110,165,0.9)';
+  for(let i=0;i<counts.length;i++){
+    const x0=X(edges[i]), x1=X(edges[i+1]);
+    const y0=Y(0), y1=Y(counts[i]);
+    ctx.fillRect(x0, y1, Math.max(1,x1-x0-1), y0-y1);
+  }
+  curves.forEach(c=>{
+    if(!c.data || c.data.length===0) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle=c.color; ctx.lineWidth=c.width||2;
+    if(c.dash) ctx.setLineDash(c.dash);
+    c.data.forEach((p,i)=>{
+      const px=X(p.x), py=Y(p.y);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    });
+    ctx.stroke();
+    ctx.restore();
+  });
+  ctx.fillStyle='#736c60'; ctx.font='10px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<=4;i++){
+    const xv=xMin+(xMax-xMin)*i/4;
+    ctx.fillText(xv.toFixed(1), X(xv), padT+plotH+6);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=4;i++){
+    const yv=yMax*i/4;
+    ctx.fillText(yv.toFixed(2), padL-7, Y(yv));
+  }
+  ctx.textBaseline='alphabetic';
+  ctx.save();
+  ctx.translate(12,padT+plotH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';
+  ctx.fillText(ylabel,0,0);
+  ctx.restore();
+  ctx.textAlign='center';
+  ctx.fillText(xlabel, padL+plotW/2, h-6);
+  return {X,Y};
 }
 // ============================================================
 // Shared grid renderer (nearest-neighbor upscaled ImageData)
@@ -1436,6 +1798,892 @@ const CSRModule = (function(){
 
 
 // ============================================================
+// Colicin allelopathy — non-spatial (mean-field) phase portrait
+// ============================================================
+const ColicinNSModule = (function(){
+  const BETA1=3.0, DELTA1=1.0, DELTA2=1.0;
+  const T_MAX=40.0, N_STEPS=1200;
+  const COLOR_C='#C0392B', COLOR_S='#3B6EA5';
+  const TRAJ_COLORS=['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f'];
+
+  let beta2=3.0, gamma=2.0;
+  let customICs=[];
+
+  function rhs(rho1,rho2,beta2v,gammav){
+    rho1=Math.max(rho1,0); rho2=Math.max(rho2,0);
+    const d1=BETA1*rho1*(1-rho1-rho2)-DELTA1*rho1;
+    const d2=beta2v*rho2*(1-rho1-rho2)-DELTA2*rho2-gammav*rho1*rho2;
+    return [d1,d2];
+  }
+  function jacobian(rho1,rho2,beta2v,gammav){
+    const df1d1=BETA1*(1-2*rho1-rho2)-DELTA1;
+    const df1d2=-BETA1*rho1;
+    const df2d1=-(beta2v+gammav)*rho2;
+    const df2d2=beta2v*(1-rho1-2*rho2)-DELTA2-gammav*rho1;
+    return [[df1d1,df1d2],[df2d1,df2d2]];
+  }
+  function fixedPoints(beta2v,gammav){
+    const K1=1-DELTA1/BETA1, K2=1-DELTA2/beta2v;
+    const pts={origin:[0,0]};
+    if(K1>0) pts.C_only=[K1,0];
+    if(K2>0) pts.S_only=[0,K2];
+    if(gammav>1e-9 && K1>0 && K2>0){
+      const rho1i=(K2-K1)*beta2v/gammav;
+      const rho2i=K1-rho1i;
+      if(rho1i>1e-6 && rho2i>1e-6) pts.interior=[rho1i,rho2i];
+    }
+    return {pts,K1,K2};
+  }
+  function stability(rho1,rho2,beta2v,gammav){
+    const J=jacobian(rho1,rho2,beta2v,gammav);
+    const trace=J[0][0]+J[1][1];
+    const det=J[0][0]*J[1][1]-J[0][1]*J[1][0];
+    if(trace<-1e-9 && det>1e-9) return 'stable';
+    if(det<-1e-9) return 'saddle';
+    if(trace>1e-9 && det>1e-9) return 'unstable';
+    return 'saddle';
+  }
+  function classifyRegime(beta2v,gammav){
+    const {pts,K1,K2}=fixedPoints(beta2v,gammav);
+    const cStable = pts.C_only && stability(pts.C_only[0],pts.C_only[1],beta2v,gammav)==='stable';
+    const sStable = pts.S_only && stability(pts.S_only[0],pts.S_only[1],beta2v,gammav)==='stable';
+    let label;
+    if(cStable && sStable) label='BISTABLE (outcome depends on initial frequencies)';
+    else if(sStable && !cStable) label='MONOSTABLE — colicin-sensitive strain (S) always wins';
+    else if(cStable && !sStable) label='MONOSTABLE — colicin-producing strain (C) always wins';
+    else label='no locally stable single-strain equilibrium';
+    return {label,pts,K1,K2};
+  }
+  function integrateTrajectory(ic,beta2v,gammav){
+    const dt=T_MAX/N_STEPS;
+    let rho1=ic[0], rho2=ic[1];
+    const out=[{t:0,r1:rho1,r2:rho2}];
+    for(let i=0;i<N_STEPS;i++){
+      const k1=rhs(rho1,rho2,beta2v,gammav);
+      const k2=rhs(rho1+0.5*dt*k1[0],rho2+0.5*dt*k1[1],beta2v,gammav);
+      const k3=rhs(rho1+0.5*dt*k2[0],rho2+0.5*dt*k2[1],beta2v,gammav);
+      const k4=rhs(rho1+dt*k3[0],rho2+dt*k3[1],beta2v,gammav);
+      rho1=Math.max(0,rho1+dt/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]));
+      rho2=Math.max(0,rho2+dt/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]));
+      out.push({t:(i+1)*dt,r1:rho1,r2:rho2});
+    }
+    return out;
+  }
+
+  let lastLim=1.05, lastMap=null;
+
+  function redraw(){
+    const {label,pts,K1,K2}=classifyRegime(beta2,gamma);
+    document.getElementById('coliNSRegime').textContent='Regime: '+label;
+
+    let lim=Math.max(1.02,K1+0.05,K2+0.05); lim=Math.min(lim,1.05);
+    lastLim=lim;
+
+    const canvas=document.getElementById('coliNSPhase');
+    const ctx=canvas.getContext('2d');
+    const w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const padL=42,padR=14,padT=14,padB=36;
+    const plotW=w-padL-padR, plotH=h-padT-padB;
+    const X=x=>padL+(x/lim)*plotW;
+    const Y=y=>padT+plotH-(y/lim)*plotH;
+    lastMap={X:X,Y:Y,padL,padT,plotW,plotH,lim};
+
+    ctx.strokeStyle='#d8d2c3'; ctx.lineWidth=1;
+    ctx.strokeRect(padL+0.5,padT+0.5,plotW,plotH);
+
+    // simplex boundary
+    ctx.strokeStyle='#bbb'; ctx.setLineDash([2,3]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(0),Y(1)); ctx.lineTo(X(1),Y(0)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // nullclines
+    if(K1>0){
+      ctx.strokeStyle=COLOR_C; ctx.setLineDash([6,4]); ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(X(0),Y(K1)); ctx.lineTo(X(K1),Y(0)); ctx.stroke();
+    }
+    if(K2>0){
+      const slope=1+gamma/beta2;
+      const xMax=slope>0?Math.min(lim,K2/slope):lim;
+      ctx.strokeStyle=COLOR_S; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(X(0),Y(K2)); ctx.lineTo(X(xMax),Y(K2-slope*xMax)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // trajectories
+    const ics=customICs;
+    const trajData=[];
+    ics.forEach((ic,k)=>{
+      const color=TRAJ_COLORS[k%TRAJ_COLORS.length];
+      const traj=integrateTrajectory(ic,beta2,gamma);
+      trajData.push({traj,color});
+      ctx.strokeStyle=color; ctx.lineWidth=1.8;
+      ctx.beginPath();
+      traj.forEach((p,i)=>{ const px=X(p.r1),py=Y(p.r2); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); });
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(X(ic[0]),Y(ic[1]),4,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+      const idx=Math.floor(0.65*traj.length);
+      if(idx<traj.length-2){
+        const p0=traj[idx], p1=traj[idx+2];
+        const x0=X(p0.r1),y0=Y(p0.r2),x1=X(p1.r1),y1=Y(p1.r2);
+        const ang=Math.atan2(y1-y0,x1-x0);
+        ctx.save(); ctx.translate(x1,y1); ctx.rotate(ang);
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-7,3.5); ctx.lineTo(-7,-3.5); ctx.closePath();
+        ctx.fillStyle=color; ctx.fill(); ctx.restore();
+      }
+    });
+
+    // fixed points
+    function plotFP(name){
+      if(!pts[name]) return;
+      const [x,y]=pts[name];
+      const st=stability(x,y,beta2,gamma);
+      ctx.beginPath(); ctx.arc(X(x),Y(y),8,0,Math.PI*2);
+      if(st==='stable'){ ctx.fillStyle='#242220'; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); }
+      else if(st==='unstable'){ ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle='#242220'; ctx.lineWidth=2; ctx.stroke(); }
+      else { ctx.fillStyle='#e8971c'; ctx.fill(); ctx.strokeStyle='#242220'; ctx.lineWidth=1.2; ctx.stroke(); }
+    }
+    ['origin','C_only','S_only','interior'].forEach(plotFP);
+
+    // axis labels
+    ctx.fillStyle='#242220'; ctx.font='12px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('ρ₁  (colicin-producing strain, C)', padL+plotW/2, h-6);
+    ctx.save(); ctx.translate(12,padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText('ρ₂  (colicin-sensitive strain, S)',0,0); ctx.restore();
+    ctx.textAlign='left'; ctx.font='11px sans-serif'; ctx.fillStyle='#736c60';
+    ctx.fillText('c = β₂−β₁ = '+(beta2-BETA1).toFixed(2), padL+4, padT+14);
+
+    // ticks
+    ctx.strokeStyle='#a49d8f'; ctx.fillStyle='#736c60'; ctx.font='10px sans-serif';
+    for(let i=0;i<=4;i++){
+      const v=lim*i/4;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.beginPath(); ctx.moveTo(X(v),padT+plotH); ctx.lineTo(X(v),padT+plotH+4); ctx.stroke();
+      ctx.fillText(v.toFixed(2), X(v), padT+plotH+6);
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.beginPath(); ctx.moveTo(padL-4,Y(v)); ctx.lineTo(padL,Y(v)); ctx.stroke();
+      ctx.fillText(v.toFixed(2), padL-6, Y(v));
+    }
+
+    // time-series chart
+    const tMaxShow=T_MAX;
+    const series=[];
+    trajData.forEach((td,k)=>{
+      series.push({color:td.color,data:td.traj.map(p=>({x:p.t,y:p.r1})),width:1.8});
+      series.push({color:td.color,data:td.traj.map(p=>({x:p.t,y:p.r2})),width:1.8,dash:[5,3]});
+    });
+    drawSeriesChart(document.getElementById('coliNSChart'),{
+      series,xMax:tMaxShow,yMin:0,yMax:Math.max(1,K1+0.05,K2+0.05),
+      xlabel:'time',ylabel:'population density'
+    });
+  }
+
+  function canvasToData(canvas,evt){
+    const rect=canvas.getBoundingClientRect();
+    const px=(evt.clientX-rect.left)*(canvas.width/rect.width);
+    const py=(evt.clientY-rect.top)*(canvas.height/rect.height);
+    if(!lastMap) return null;
+    const x=(px-lastMap.padL)/lastMap.plotW*lastMap.lim;
+    const y=lastMap.lim*(1-(py-lastMap.padT)/lastMap.plotH);
+    return [x,y];
+  }
+
+  function syncReadouts(){
+    document.getElementById('coliNSBeta2Val').textContent=beta2.toFixed(2);
+    document.getElementById('coliNSGammaVal').textContent=gamma.toFixed(1);
+  }
+
+  function init(){
+    document.getElementById('coliNSBeta2').addEventListener('input', e=>{ beta2=parseFloat(e.target.value); syncReadouts(); redraw(); });
+    document.getElementById('coliNSGamma').addEventListener('input', e=>{ gamma=parseFloat(e.target.value); syncReadouts(); redraw(); });
+    document.getElementById('coliNSReset').addEventListener('click', ()=>{ customICs=[]; redraw(); });
+    document.getElementById('coliNSPhase').addEventListener('click', e=>{
+      const xy=canvasToData(e.target,e);
+      if(!xy) return;
+      const [x,y]=xy;
+      if(x<0||y<0||x+y>=0.995) return;
+      customICs.push([x,y]);
+      if(customICs.length>8) customICs.shift();
+      redraw();
+    });
+    syncReadouts();
+    redraw();
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick: function(){} };
+})();
+
+
+// ============================================================
+// Klausmeier (1999) semiarid vegetation reaction-diffusion model
+// ============================================================
+const KlausmeierModule = (function(){
+  const NX=100, NY=100, LX=200.0, LY=200.0;
+  const DX=LX/NX, DY=LY/NY;
+  const DT=0.0003, SUBSTEPS=40;
+  const N_CAP=200.0, W_CAP=50.0;
+
+  const params={a:2.0,v:150.0,Dn:1.0,Dw:10.0,m:0.45,R:1.0};
+  let W,N,tElapsed=0,paused=false;
+
+  const xm1=new Int32Array(NX), xp1=new Int32Array(NX);
+  for(let x=0;x<NX;x++){ xm1[x]=(x-1+NX)%NX; xp1[x]=(x+1)%NX; }
+  const ym1=new Int32Array(NY), yp1=new Int32Array(NY);
+  for(let y=0;y<NY;y++){ ym1[y]=(y-1+NY)%NY; yp1[y]=(y+1)%NY; }
+
+  function nontrivialEquilibrium(a,m,R){
+    const disc=(a*R)*(a*R)-4*m*m;
+    if(disc<0) return null;
+    const nPlus=(a*R+Math.sqrt(disc))/(2*m);
+    const wPlus=m/(R*nPlus);
+    return [wPlus,nPlus];
+  }
+  function initFields(){
+    const eq=nontrivialEquilibrium(params.a,params.m,params.R);
+    let w0,n0;
+    if(!eq){ w0=params.a; n0=0.0; } else { [w0,n0]=eq; }
+    const Wa=new Float64Array(NX*NY), Na=new Float64Array(NX*NY);
+    for(let i=0;i<NX*NY;i++){
+      Wa[i]=Math.max(0, w0+0.01*(Math.random()*2-1));
+      Na[i]=Math.max(0, n0+0.05*Math.max(n0,0.1)*(Math.random()*2-1));
+    }
+    return [Wa,Na];
+  }
+  [W,N]=initFields();
+
+  function step(){
+    const a=params.a,v=params.v,Dn=params.Dn,Dw=params.Dw,m=params.m,R=params.R;
+    for(let s=0;s<SUBSTEPS;s++){
+      const Wnew=new Float64Array(NX*NY), Nnew=new Float64Array(NX*NY);
+      for(let y=0;y<NY;y++){
+        const y0=y*NX, yU=ym1[y]*NX, yD=yp1[y]*NX;
+        for(let x=0;x<NX;x++){
+          const idx=y0+x;
+          const wv=W[idx], nv=N[idx];
+          const lapW=(W[y0+xp1[x]]+W[y0+xm1[x]]+W[yD+x]+W[yU+x]-4*wv)/(DX*DY);
+          const lapN=(N[y0+xp1[x]]+N[y0+xm1[x]]+N[yD+x]+N[yU+x]-4*nv)/(DX*DY);
+          let ddx;
+          if(v>=0) ddx=(W[y0+xp1[x]]-wv)/DX; else ddx=(wv-W[y0+xm1[x]])/DX;
+          const uptake=wv*nv*nv;
+          const dWdt=a-wv-uptake+v*ddx+Dw*lapW;
+          const dNdt=R*uptake-m*nv+Dn*lapN;
+          Wnew[idx]=Math.min(W_CAP,Math.max(0,wv+DT*dWdt));
+          Nnew[idx]=Math.min(N_CAP,Math.max(0,nv+DT*dNdt));
+        }
+      }
+      W=Wnew; N=Nnew;
+    }
+    tElapsed+=DT*SUBSTEPS;
+  }
+
+  function bifurcationCurves(aAxis,m,R){
+    const nPlus=new Array(aAxis.length), nMinus=new Array(aAxis.length);
+    for(let i=0;i<aAxis.length;i++){
+      const aR=aAxis[i]*R;
+      const disc=aR*aR-4*m*m;
+      if(disc<0){ nPlus[i]=NaN; nMinus[i]=NaN; }
+      else{ nPlus[i]=(aR+Math.sqrt(disc))/(2*m); nMinus[i]=(aR-Math.sqrt(disc))/(2*m); }
+    }
+    return [nPlus,nMinus];
+  }
+  const aAxis=[]; for(let i=0;i<400;i++) aAxis.push(0.05+(5.0-0.05)*i/399);
+
+  function meanN(){ let s=0; for(let i=0;i<N.length;i++) s+=N[i]; return s/N.length; }
+
+  function render(){
+    let maxN=0; for(let i=0;i<N.length;i++) if(N[i]>maxN) maxN=N[i];
+    renderHeatmap(document.getElementById('klausField'), N, NX, NY, 0, Math.max(1,maxN));
+
+    const [nPlus,nMinus]=bifurcationCurves(aAxis,params.m,params.R);
+    const stableSeries={color:'#2e7d32',width:2,data:aAxis.map((av,i)=>({x:av,y:nPlus[i]})).filter(p=>!Number.isNaN(p.y))};
+    const unstableSeries={color:'#8bc34a',width:1.5,dash:[6,4],data:aAxis.map((av,i)=>({x:av,y:nMinus[i]})).filter(p=>!Number.isNaN(p.y))};
+    const bareSeries={color:'#8a5a2b',width:2,data:[{x:0,y:0},{x:5,y:0}]};
+    drawSeriesChart(document.getElementById('klausBifurc'),{
+      series:[stableSeries,unstableSeries,bareSeries],
+      xMin:0,xMax:5,yMin:-0.2,yMax:6,
+      xlabel:'Rainfall a',ylabel:'Equilibrium N',
+      refLines:[{x:2*params.m/params.R,color:'#888',dash:[3,3]}],
+      points:[{x:params.a,y:meanN(),color:'#d7263d',r:6}]
+    });
+    document.getElementById('klausTime').textContent='t = '+tElapsed.toFixed(1)+'   mean N = '+meanN().toFixed(3);
+  }
+
+  function syncReadouts(){
+    document.getElementById('klausAVal').textContent=params.a.toFixed(2);
+    document.getElementById('klausVVal').textContent=params.v.toFixed(0);
+    document.getElementById('klausDnVal').textContent=params.Dn.toFixed(2);
+    document.getElementById('klausDwVal').textContent=params.Dw.toFixed(0);
+    document.getElementById('klausMVal').textContent=params.m.toFixed(2);
+    document.getElementById('klausRVal').textContent=params.R.toFixed(2);
+  }
+
+  function init(){
+    document.getElementById('klausA').addEventListener('input', e=>{ params.a=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('klausV').addEventListener('input', e=>{ params.v=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('klausDn').addEventListener('input', e=>{ params.Dn=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('klausDw').addEventListener('input', e=>{ params.Dw=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('klausM').addEventListener('input', e=>{ params.m=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('klausR').addEventListener('input', e=>{ params.R=parseFloat(e.target.value); syncReadouts(); });
+    const pauseBtn=document.getElementById('klausPause');
+    pauseBtn.addEventListener('click', ()=>{ paused=!paused; pauseBtn.textContent = paused?'Resume':'Pause'; });
+    document.getElementById('klausReset').addEventListener('click', ()=>{ [W,N]=initFields(); tElapsed=0; render(); });
+    syncReadouts();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelKlausmeier')) return;
+    if(!paused) step();
+    render();
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// Random walk -> diffusion equation
+// ============================================================
+const RWModule = (function(){
+  let subtab='rw1';
+
+  function driftDiffusion(dx,dt,p){
+    const v=dx*(2*p-1)/dt;
+    const D=2*dx*dx*p*(1-p)/dt;
+    return [v,D];
+  }
+  function analyticGaussian(x,t,D,v,t0){
+    t0=t0||1e-12;
+    const tEff=Math.max(t,t0);
+    return (1/Math.sqrt(4*Math.PI*D*tEff))*Math.exp(-((x-v*tEff)*(x-v*tEff))/(4*D*tEff));
+  }
+  function solveDiffusionFD(D,v,tFinal,xMin,xMax,nGrid,cfl,sigma0Cells){
+    nGrid=nGrid||401; cfl=cfl||0.4; sigma0Cells=sigma0Cells||1.0;
+    const xGrid=new Float64Array(nGrid);
+    const dxg=(xMax-xMin)/(nGrid-1);
+    for(let i=0;i<nGrid;i++) xGrid[i]=xMin+i*dxg;
+    const sigma0=Math.max(sigma0Cells*dxg,1e-9);
+    let P=new Float64Array(nGrid);
+    let integral=0;
+    for(let i=0;i<nGrid;i++){ P[i]=Math.exp(-(xGrid[i]*xGrid[i])/(2*sigma0*sigma0)); }
+    for(let i=0;i<nGrid-1;i++) integral += 0.5*(P[i]+P[i+1])*dxg;
+    for(let i=0;i<nGrid;i++) P[i]/=integral;
+    if(tFinal<=0 || D<=0) return [xGrid,P];
+    const dtDiff=cfl*dxg*dxg/D;
+    const dtAdv=Math.abs(v)>1e-12 ? 0.5*dxg/Math.abs(v) : Infinity;
+    let dtPde=Math.min(dtDiff,dtAdv);
+    const nSub=Math.max(1,Math.ceil(tFinal/dtPde));
+    dtPde=tFinal/nSub;
+    const r=D*dtPde/(dxg*dxg), c=v*dtPde/(2*dxg);
+    for(let s=0;s<nSub;s++){
+      const Pn=new Float64Array(nGrid);
+      for(let i=1;i<nGrid-1;i++){
+        Pn[i]=P[i]+r*(P[i+1]-2*P[i]+P[i-1])-c*(P[i+1]-P[i-1]);
+      }
+      Pn[0]=0; Pn[nGrid-1]=0;
+      P=Pn;
+    }
+    return [xGrid,P];
+  }
+  function latticeBins(data,dx,targetBins){
+    let maxAbs=dx;
+    for(let i=0;i<data.length;i++) if(Math.abs(data[i])>maxAbs) maxAbs=Math.abs(data[i]);
+    const span=data.length? maxAbs*1.15 : dx*1.15;
+    const rawWidth=(2*span)/Math.max(targetBins,1);
+    let nDx=Math.max(2,Math.round(rawWidth/dx));
+    if(nDx%2!==0) nDx+=1;
+    const width=nDx*dx;
+    const nHalf=Math.ceil(span/width)+1;
+    const edges=[];
+    for(let i=-nHalf;i<=nHalf;i++) edges.push(i*width);
+    return edges;
+  }
+  function histogramCounts(data,edges){
+    const counts=new Array(edges.length-1).fill(0);
+    for(let i=0;i<data.length;i++){
+      const v=data[i];
+      let lo=0, hi=edges.length-1;
+      if(v<edges[0]||v>edges[hi]) continue;
+      while(hi-lo>1){ const mid=(lo+hi)>>1; if(edges[mid]<=v) lo=mid; else hi=mid; }
+      counts[lo]++;
+    }
+    const width=edges[1]-edges[0];
+    return counts.map(c=>c/(data.length*width));
+  }
+  function simulateRandomWalk(nWalkers,nSteps,dx,dt,p){
+    const positions=new Float32Array(nWalkers*(nSteps+1));
+    for(let w=0;w<nWalkers;w++){
+      let pos=0;
+      const base=w*(nSteps+1);
+      positions[base]=0;
+      for(let s=0;s<nSteps;s++){
+        pos += Math.random()<p ? dx : -dx;
+        positions[base+s+1]=pos;
+      }
+    }
+    const times=new Float32Array(nSteps+1);
+    for(let s=0;s<=nSteps;s++) times[s]=s*dt;
+    return [positions,times];
+  }
+
+  // ---------------- Tab 1: random walk intuition ----------------
+  let pos1=null, times1=null, nSteps1=500, nWalkers1=200;
+  let tIdx1=500, playing1=false;
+
+  function resim1(){
+    nWalkers1=parseInt(document.getElementById('rw1NWalkers').value,10);
+    nSteps1=parseInt(document.getElementById('rw1NSteps').value,10);
+    const p=parseFloat(document.getElementById('rw1P').value);
+    [pos1,times1]=simulateRandomWalk(nWalkers1,nSteps1,1.0,1.0,p);
+    document.getElementById('rw1T').max=nSteps1;
+    document.getElementById('rw1T').value=nSteps1;
+    tIdx1=nSteps1;
+    redraw1();
+  }
+  function redraw1(){
+    if(!pos1) return;
+    const nShown=Math.min(parseInt(document.getElementById('rw1NShown').value,10), nWalkers1);
+    const nBins=parseInt(document.getElementById('rw1NBins').value,10);
+    const showG=document.getElementById('rw1Gaussian').checked;
+    const p=parseFloat(document.getElementById('rw1P').value);
+
+    const stride=Math.max(1,Math.floor((tIdx1+1)/300));
+    const series=[];
+    for(let w=0;w<nShown;w++){
+      const base=w*(nSteps1+1);
+      const data=[];
+      for(let s=0;s<=tIdx1;s+=stride) data.push({x:times1[s],y:pos1[base+s]});
+      if(data.length===0 || data[data.length-1].x!==times1[tIdx1]) data.push({x:times1[tIdx1],y:pos1[base+tIdx1]});
+      series.push({color:'#3b6ea5',alpha:0.55,width:1,data});
+    }
+    let yMin=0,yMax=0;
+    for(let w=0;w<nWalkers1;w++){ const v=pos1[w*(nSteps1+1)+tIdx1]; if(v<yMin)yMin=v; if(v>yMax)yMax=v; }
+    if(yMax-yMin<2){ yMin-=1; yMax+=1; }
+    drawSeriesChart(document.getElementById('rw1Traj'),{
+      series, xMax:Math.max(times1[tIdx1],1), yMin:yMin*1.15, yMax:yMax*1.15,
+      xlabel:'step (time)', ylabel:'position'
+    });
+
+    const final=[];
+    for(let w=0;w<nWalkers1;w++) final.push(pos1[w*(nSteps1+1)+tIdx1]);
+    const edges=latticeBins(final,1.0,nBins);
+    const counts=histogramCounts(final,edges);
+    const yMaxHist=Math.max(0.01,Math.max(...counts))*1.2;
+    const curves=[];
+    if(showG && tIdx1>0){
+      const [v,D]=driftDiffusion(1.0,1.0,p);
+      const t=times1[tIdx1];
+      const xs=[]; for(let i=0;i<200;i++) xs.push(edges[0]+(edges[edges.length-1]-edges[0])*i/199);
+      curves.push({color:'#c0392b',width:2,data:xs.map(x=>({x,y:analyticGaussian(x,t,D,v)}))});
+    }
+    drawHistogramChart(document.getElementById('rw1Hist'),{
+      edges,counts,xMin:edges[0],xMax:edges[edges.length-1],yMax:yMaxHist,
+      xlabel:'position',ylabel:'density',curves
+    });
+
+    let mean=0,varr=0;
+    for(let i=0;i<final.length;i++) mean+=final[i]; mean/=final.length;
+    for(let i=0;i<final.length;i++) varr+=(final[i]-mean)*(final[i]-mean); varr/=final.length;
+    document.getElementById('rw1Stats').textContent =
+      'step = '+tIdx1+'\nmean position = '+mean.toFixed(2)+'\nvariance = '+varr.toFixed(2)+'\n(watch: variance grows ~linearly in step count)';
+    document.getElementById('rw1TVal').textContent=tIdx1;
+  }
+
+  // ---------------- Tab 2: diffusion eq vs random walk ----------------
+  let pos2=null, times2=null, nSteps2=500, nWalkers2=2000;
+  let tIdx2=500, playing2=false;
+
+  function resim2(){
+    nWalkers2=parseInt(document.getElementById('rw2NWalkers').value,10);
+    nSteps2=parseInt(document.getElementById('rw2NSteps').value,10);
+    const dx=parseFloat(document.getElementById('rw2Dx').value);
+    const dt=parseFloat(document.getElementById('rw2Dt').value);
+    const p=parseFloat(document.getElementById('rw2P').value);
+    [pos2,times2]=simulateRandomWalk(nWalkers2,nSteps2,dx,dt,p);
+    document.getElementById('rw2T').max=nSteps2;
+    document.getElementById('rw2T').value=nSteps2;
+    tIdx2=nSteps2;
+    redraw2();
+  }
+  function redraw2(){
+    if(!pos2) return;
+    const dx=parseFloat(document.getElementById('rw2Dx').value);
+    const dt=parseFloat(document.getElementById('rw2Dt').value);
+    const p=parseFloat(document.getElementById('rw2P').value);
+    const nBins=parseInt(document.getElementById('rw2NBins').value,10);
+    const showA=document.getElementById('rw2Analytic').checked;
+    const [v,D]=driftDiffusion(dx,dt,p);
+    const t=times2[tIdx2];
+
+    const final=[];
+    for(let w=0;w<nWalkers2;w++) final.push(pos2[w*(nSteps2+1)+tIdx2]);
+    const edges=latticeBins(final,dx,nBins);
+    const counts=histogramCounts(final,edges);
+    let span=dx; for(let i=0;i<final.length;i++) if(Math.abs(final[i])>span) span=Math.abs(final[i]);
+    span*=1.15;
+
+    const [xGrid,Pfd]=solveDiffusionFD(D,v,t,-span,span,401);
+    const curves=[{color:'#2e8b3d',width:2.5,data:Array.from(xGrid).map((x,i)=>({x,y:Pfd[i]}))}];
+    if(showA && t>0){
+      const xs=[]; for(let i=0;i<200;i++) xs.push(-span+2*span*i/199);
+      curves.push({color:'#c0392b',width:1.5,dash:[5,3],data:xs.map(x=>({x,y:analyticGaussian(x,t,D,v)}))});
+    }
+    const yMax=Math.max(0.01,Math.max(...counts),Math.max(...Pfd))*1.15;
+    drawHistogramChart(document.getElementById('rw2Hist'),{
+      edges,counts,xMin:-span,xMax:span,yMax,
+      xlabel:'position x',ylabel:'probability density',curves
+    });
+
+    let mean=0,varr=0;
+    for(let i=0;i<final.length;i++) mean+=final[i]; mean/=final.length;
+    for(let i=0;i<final.length;i++) varr+=(final[i]-mean)*(final[i]-mean); varr/=final.length;
+    document.getElementById('rw2Info').textContent =
+      'Implied drift v = '+v.toFixed(3)+'\nImplied diffusion coeff. D = '+D.toFixed(3)+
+      '\n(D = 2Δx²p(1-p)/Δt, v = Δx(2p-1)/Δt)\n\nempirical mean = '+mean.toFixed(3)+' (theory: '+(v*t).toFixed(3)+
+      ')\nempirical var = '+varr.toFixed(3)+' (theory: '+(2*D*t).toFixed(3)+')';
+    document.getElementById('rw2TVal').textContent=tIdx2;
+  }
+
+  function syncLabels(){
+    document.getElementById('rw1NWalkersVal').textContent=document.getElementById('rw1NWalkers').value;
+    document.getElementById('rw1NStepsVal').textContent=document.getElementById('rw1NSteps').value;
+    document.getElementById('rw1PVal').textContent=parseFloat(document.getElementById('rw1P').value).toFixed(2);
+    document.getElementById('rw1NShownVal').textContent=document.getElementById('rw1NShown').value;
+    document.getElementById('rw1NBinsVal').textContent=document.getElementById('rw1NBins').value;
+    document.getElementById('rw2NWalkersVal').textContent=document.getElementById('rw2NWalkers').value;
+    document.getElementById('rw2NStepsVal').textContent=document.getElementById('rw2NSteps').value;
+    document.getElementById('rw2DxVal').textContent=parseFloat(document.getElementById('rw2Dx').value).toFixed(1);
+    document.getElementById('rw2DtVal').textContent=parseFloat(document.getElementById('rw2Dt').value).toFixed(1);
+    document.getElementById('rw2PVal').textContent=parseFloat(document.getElementById('rw2P').value).toFixed(2);
+    document.getElementById('rw2NBinsVal').textContent=document.getElementById('rw2NBins').value;
+  }
+
+  function init(){
+    document.getElementById('rwTab1Btn').addEventListener('click', ()=>switchSubtab('rw1'));
+    document.getElementById('rwTab2Btn').addEventListener('click', ()=>switchSubtab('rw2'));
+
+    ['rw1NWalkers','rw1NSteps','rw1P'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ syncLabels(); }));
+    document.getElementById('rw1NShown').addEventListener('input', ()=>{ syncLabels(); redraw1(); });
+    document.getElementById('rw1NBins').addEventListener('input', ()=>{ syncLabels(); redraw1(); });
+    document.getElementById('rw1Resim').addEventListener('click', resim1);
+    document.getElementById('rw1T').addEventListener('input', e=>{ tIdx1=parseInt(e.target.value,10); redraw1(); });
+    document.getElementById('rw1Gaussian').addEventListener('change', redraw1);
+    document.getElementById('rw1Play').addEventListener('click', e=>{
+      playing1=!playing1; e.target.textContent = playing1?'Pause':'▶ Play';
+    });
+
+    ['rw2NWalkers','rw2NSteps','rw2Dx','rw2Dt','rw2P'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ syncLabels(); }));
+    document.getElementById('rw2NBins').addEventListener('input', ()=>{ syncLabels(); redraw2(); });
+    document.getElementById('rw2Resim').addEventListener('click', resim2);
+    document.getElementById('rw2T').addEventListener('input', e=>{ tIdx2=parseInt(e.target.value,10); redraw2(); });
+    document.getElementById('rw2Analytic').addEventListener('change', redraw2);
+    document.getElementById('rw2Play').addEventListener('click', e=>{
+      playing2=!playing2; e.target.textContent = playing2?'Pause':'▶ Play';
+    });
+
+    syncLabels();
+    resim1();
+    resim2();
+  }
+  function switchSubtab(name){
+    subtab=name;
+    document.getElementById('rwTab1Btn').classList.toggle('active', name==='rw1');
+    document.getElementById('rwTab2Btn').classList.toggle('active', name==='rw2');
+    document.getElementById('rwSubpanel1').classList.toggle('active', name==='rw1');
+    document.getElementById('rwSubpanel2').classList.toggle('active', name==='rw2');
+  }
+
+  function tick(){
+    if(!isPanelActive('panelRW')) return;
+    if(subtab==='rw1' && playing1){
+      const nxt=tIdx1+Math.max(1,Math.floor(nSteps1/100));
+      tIdx1 = nxt>nSteps1 ? 0 : nxt;
+      document.getElementById('rw1T').value=tIdx1;
+      redraw1();
+    } else if(subtab==='rw2' && playing2){
+      const nxt=tIdx2+Math.max(1,Math.floor(nSteps2/100));
+      tIdx2 = nxt>nSteps2 ? 1 : nxt;
+      document.getElementById('rw2T').value=tIdx2;
+      redraw2();
+    }
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+
+// ============================================================
+// Habitat selection via movement (Kareiva 1982)
+// ============================================================
+const HabitatModule = (function(){
+  const PATCH_COLORS_LOW=[210,180,140], PATCH_COLORS_HIGH=[46,139,50];
+
+  let customQuality=null;
+
+  function qualityPreset(name,S){
+    if(name==='Homogeneous') return new Array(S).fill(0.5);
+    if(name==='Alternating (lush/stunted)') return Array.from({length:S},(_,i)=>i%2===0?1.0:0.0);
+    if(name==='Gradient (stunted -> lush)') return Array.from({length:S},(_,i)=>i/(S-1||1));
+    if(name==='One damaged patch (center)'){ const q=new Array(S).fill(0.8); q[Math.floor(S/2)]=0.05; return q; }
+    return new Array(S).fill(0.5);
+  }
+  function currentQuality(){
+    const S=parseInt(document.getElementById('habS').value,10);
+    const preset=document.getElementById('habPreset').value;
+    if(preset==='Custom'){
+      if(!customQuality || customQuality.length!==S) customQuality=qualityPreset('Alternating (lush/stunted)',S);
+      return customQuality;
+    }
+    return qualityPreset(preset,S);
+  }
+  function buildGenerator(quality,mobilityK,distance,qualityEffect,alpha){
+    const S=quality.length;
+    const baseRate=mobilityK/Math.max(distance,1e-6);
+    const Q=Array.from({length:S},()=>new Array(S).fill(0));
+    for(let i=0;i<S;i++){
+      let rateI=baseRate*(qualityEffect ? (1-alpha*quality[i]) : 1.0);
+      rateI=Math.max(rateI,1e-6);
+      const neighbors=[]; if(i-1>=0) neighbors.push(i-1); if(i+1<S) neighbors.push(i+1);
+      if(neighbors.length===0) continue;
+      const share=rateI/neighbors.length;
+      neighbors.forEach(j=>{ Q[i][j]=share; });
+      Q[i][i]=-rateI;
+    }
+    return Q;
+  }
+  // dN/dt = N*Q  (N row vector). RK4 integrate, sampling at nSamples points over [0,tMax].
+  function integrateMasterEq(Q,N0,tMax,nSamples){
+    const S=N0.length;
+    function deriv(N){
+      const out=new Array(S).fill(0);
+      for(let j=0;j<S;j++){
+        let s=0;
+        for(let i=0;i<S;i++) s+=N[i]*Q[i][j];
+        out[j]=s;
+      }
+      return out;
+    }
+    const nSteps=600;
+    const dt=tMax/nSteps;
+    let N=N0.slice();
+    const samples=[N.slice()];
+    const sampleEvery=Math.max(1,Math.floor(nSteps/nSamples));
+    for(let step=0;step<nSteps;step++){
+      const k1=deriv(N);
+      const k2=deriv(N.map((v,i)=>v+0.5*dt*k1[i]));
+      const k3=deriv(N.map((v,i)=>v+0.5*dt*k2[i]));
+      const k4=deriv(N.map((v,i)=>v+dt*k3[i]));
+      N=N.map((v,i)=>v+dt/6*(k1[i]+2*k2[i]+2*k3[i]+k4[i]));
+      if((step+1)%sampleEvery===0) samples.push(N.slice());
+    }
+    if(samples[samples.length-1]!==N) samples.push(N.slice());
+    return samples; // samples[k] approximates N at t = k*(tMax/(samples.length-1))
+  }
+  function sampleAt(samples,tMax,t){
+    const frac=Math.max(0,Math.min(1,t/tMax));
+    const idx=frac*(samples.length-1);
+    const i0=Math.floor(idx), i1=Math.min(samples.length-1,i0+1);
+    const f=idx-i0;
+    const a=samples[i0], b=samples[i1];
+    return a.map((v,i)=>v+(b[i]-v)*f);
+  }
+  function simulateCTMCWalkers(Q,releasePatch,nWalkers,tMax){
+    const S=Q.length;
+    const trajectories=[];
+    for(let w=0;w<nWalkers;w++){
+      let t=0, patch=releasePatch;
+      const times=[0], patches=[patch];
+      while(true){
+        const rateOut=-Q[patch][patch];
+        if(rateOut<=1e-9) break;
+        const dt=-Math.log(1-Math.random())/rateOut;
+        t+=dt;
+        if(t>=tMax) break;
+        let r=Math.random()*rateOut, acc=0, next=patch;
+        for(let j=0;j<S;j++){
+          if(j===patch) continue;
+          acc+=Q[patch][j];
+          if(r<=acc){ next=j; break; }
+        }
+        patch=next;
+        times.push(t); patches.push(patch);
+      }
+      trajectories.push({times,patches});
+    }
+    return trajectories;
+  }
+  function positionsAt(trajectories,tQuery){
+    return trajectories.map(tr=>{
+      let lo=0, hi=tr.times.length-1;
+      if(tQuery<tr.times[0]) return tr.patches[0];
+      while(hi-lo>1){ const mid=(lo+hi)>>1; if(tr.times[mid]<=tQuery) lo=mid; else hi=mid; }
+      return tr.patches[lo];
+    });
+  }
+
+  let Qqual=null, Qnull=null, N0=null, samplesQual=null, samplesNull=null;
+  let trajQual=null, trajNull=null, tMax=50, tShown=50, playing=false;
+
+  function buildCustomSliders(){
+    const S=parseInt(document.getElementById('habS').value,10);
+    const preset=document.getElementById('habPreset').value;
+    const row=document.getElementById('habCustomRow');
+    if(preset!=='Custom'){ row.style.display='none'; row.innerHTML=''; return; }
+    if(!customQuality || customQuality.length!==S) customQuality=qualityPreset('Alternating (lush/stunted)',S);
+    row.style.display='block';
+    row.innerHTML='<label>Custom patch quality</label><div style="display:flex;gap:4px;">'+
+      customQuality.map((q,i)=>'<input type="range" min="0" max="1" step="0.05" value="'+q+'" data-idx="'+i+'" style="writing-mode:vertical-lr;direction:rtl;height:80px;width:16px;">').join('')+
+      '</div>';
+    row.querySelectorAll('input[type=range]').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        customQuality[parseInt(e.target.dataset.idx,10)]=parseFloat(e.target.value);
+        resimulate();
+      });
+    });
+  }
+
+  function resimulate(){
+    const S=parseInt(document.getElementById('habS').value,10);
+    document.getElementById('habRelease').max=S-1;
+    let release=Math.min(parseInt(document.getElementById('habRelease').value,10),S-1);
+    document.getElementById('habRelease').value=release;
+    const quality=currentQuality();
+    const mobilityK=parseFloat(document.getElementById('habMob').value);
+    const distance=parseFloat(document.getElementById('habDist').value);
+    const alpha=parseFloat(document.getElementById('habAlpha').value);
+    const nWalkers=parseInt(document.getElementById('habWalkers').value,10);
+    tMax=parseFloat(document.getElementById('habTMax').value);
+
+    Qqual=buildGenerator(quality,mobilityK,distance,true,alpha);
+    Qnull=buildGenerator(quality,mobilityK,distance,false,alpha);
+    N0=new Array(S).fill(0); N0[release]=1.0;
+
+    samplesQual=integrateMasterEq(Qqual,N0,tMax,300);
+    samplesNull=integrateMasterEq(Qnull,N0,tMax,300);
+    trajQual=simulateCTMCWalkers(Qqual,release,nWalkers,tMax);
+    trajNull=simulateCTMCWalkers(Qnull,release,nWalkers,tMax);
+
+    document.getElementById('habT').min=tMax/100;
+    document.getElementById('habT').max=tMax;
+    document.getElementById('habT').value=tMax;
+    tShown=tMax;
+    redraw();
+  }
+
+  function barRow(label,value,scale,color,tickValue){
+    const pct=v=>Math.max(0,Math.min(100,(v/scale)*100));
+    const p=pct(value);
+    let tick='';
+    if(tickValue!==undefined && tickValue!==null){
+      tick='<div class="tick" style="position:absolute;top:-5px;bottom:-5px;width:2px;background:#1f2937;left:'+pct(tickValue)+'%;"></div>';
+    }
+    return '<div class="barrow"><div class="barlabel">'+label+'</div><div class="bartrack">'+tick+
+      '<div class="barfill" style="left:0;width:'+p+'%;background:'+color+';"></div></div>'+
+      '<div class="barvalue">'+value.toFixed(3)+'</div></div>';
+  }
+
+  function redraw(){
+    if(!Qqual) return;
+    const S=parseInt(document.getElementById('habS').value,10);
+    const quality=currentQuality();
+    const release=parseInt(document.getElementById('habRelease').value,10);
+    const showNull=document.getElementById('habShowNull').checked;
+
+    const Nqual=sampleAt(samplesQual,tMax,tShown);
+    const Nnull=sampleAt(samplesNull,tMax,tShown);
+    const posQual=positionsAt(trajQual,tShown);
+    const counts=new Array(S).fill(0);
+    posQual.forEach(p=>counts[p]++);
+    const fracEmp=counts.map(c=>c/posQual.length);
+
+    document.getElementById('habQuality').innerHTML =
+      quality.map((q,i)=>{
+        const col=[Math.round(PATCH_COLORS_LOW[0]+(PATCH_COLORS_HIGH[0]-PATCH_COLORS_LOW[0])*q),
+                    Math.round(PATCH_COLORS_LOW[1]+(PATCH_COLORS_HIGH[1]-PATCH_COLORS_LOW[1])*q),
+                    Math.round(PATCH_COLORS_LOW[2]+(PATCH_COLORS_HIGH[2]-PATCH_COLORS_LOW[2])*q)];
+        const label='patch '+i+(i===release?' (release)':'');
+        return barRow(label,q,1.0,'rgb('+col.join(',')+')');
+      }).join('');
+
+    const maxVal=Math.max(0.05,...fracEmp,...Nqual,...(showNull?Nnull:[0]))*1.15;
+    document.getElementById('habDistChart').innerHTML =
+      quality.map((q,i)=>{
+        const rows=[barRow('patch '+i,fracEmp[i],maxVal,'#2e8b3d')];
+        return rows.join('');
+      }).join('') +
+      '<div class="hint" style="margin-top:6px;">Bars: simulated beetles (habitat-selection model). Ticks: master-equation prediction'+(showNull?' (black = habitat-selection, gray = passive-diffusion null)':' (habitat-selection model)')+'.</div>';
+    // overlay master-eq ticks
+    const rows=document.querySelectorAll('#habDistChart .barrow');
+    rows.forEach((row,i)=>{
+      const track=row.querySelector('.bartrack');
+      const pct=v=>Math.max(0,Math.min(100,(v/maxVal)*100));
+      let extra='<div class="tick" style="position:absolute;top:-5px;bottom:-5px;width:2px;background:#111;left:'+pct(Nqual[i])+'%;"></div>';
+      if(showNull) extra+='<div class="tick" style="position:absolute;top:-5px;bottom:-5px;width:2px;background:#999;left:'+pct(Nnull[i])+'%;"></div>';
+      track.insertAdjacentHTML('beforeend', extra);
+    });
+
+    document.getElementById('habTVal').textContent=tShown.toFixed(2);
+
+    const lushIdx=[],stuntedIdx=[];
+    quality.forEach((q,i)=>{ if(q>=0.5) lushIdx.push(i); else stuntedIdx.push(i); });
+    let discText;
+    if(lushIdx.length && stuntedIdx.length){
+      const meanLushQ=lushIdx.reduce((a,i)=>a+Nqual[i],0)/lushIdx.length;
+      const meanStuntedQ=Math.max(stuntedIdx.reduce((a,i)=>a+Nqual[i],0)/stuntedIdx.length,1e-9);
+      const meanLushN=lushIdx.reduce((a,i)=>a+Nnull[i],0)/lushIdx.length;
+      const meanStuntedN=Math.max(stuntedIdx.reduce((a,i)=>a+Nnull[i],0)/stuntedIdx.length,1e-9);
+      discText='Discrimination index (mean lush / mean stunted occupancy):\nhabitat-selection model: '+(meanLushQ/meanStuntedQ).toFixed(2)+
+        '\npassive-diffusion null: '+(meanLushN/meanStuntedN).toFixed(2);
+    } else {
+      discText='(need both lush and stunted patches to compute a discrimination index)';
+    }
+    document.getElementById('habInfo').textContent='t = '+tShown.toFixed(2)+'\n\n'+discText+"\n\nCompare to Kareiva's discrimination index (his Fig. 8): roughly 2-5 depending on spacing.";
+  }
+
+  function syncReadouts(){
+    document.getElementById('habSVal').textContent=document.getElementById('habS').value;
+    document.getElementById('habDistVal').textContent=parseFloat(document.getElementById('habDist').value).toFixed(1);
+    document.getElementById('habMobVal').textContent=parseFloat(document.getElementById('habMob').value).toFixed(1);
+    document.getElementById('habAlphaVal').textContent=parseFloat(document.getElementById('habAlpha').value).toFixed(2);
+    document.getElementById('habReleaseVal').textContent=document.getElementById('habRelease').value;
+    document.getElementById('habWalkersVal').textContent=document.getElementById('habWalkers').value;
+    document.getElementById('habTMaxVal').textContent=document.getElementById('habTMax').value;
+  }
+
+  function init(){
+    document.getElementById('habS').addEventListener('input', ()=>{ syncReadouts(); buildCustomSliders(); resimulate(); });
+    ['habDist','habMob','habAlpha'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ syncReadouts(); resimulate(); }));
+    document.getElementById('habPreset').addEventListener('change', ()=>{ buildCustomSliders(); resimulate(); });
+    document.getElementById('habRelease').addEventListener('input', ()=>{ syncReadouts(); resimulate(); });
+    document.getElementById('habWalkers').addEventListener('input', ()=>{ syncReadouts(); resimulate(); });
+    document.getElementById('habTMax').addEventListener('input', ()=>{ syncReadouts(); resimulate(); });
+    document.getElementById('habResim').addEventListener('click', resimulate);
+    document.getElementById('habT').addEventListener('input', e=>{ tShown=parseFloat(e.target.value); redraw(); });
+    document.getElementById('habShowNull').addEventListener('change', redraw);
+    document.getElementById('habPlay').addEventListener('click', e=>{
+      playing=!playing; e.target.textContent = playing?'Pause':'▶ Play';
+    });
+
+    syncReadouts();
+    buildCustomSliders();
+    resimulate();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelHabitat')) return;
+    if(playing){
+      let nxt=tShown+Math.max(tMax/150,0.05);
+      if(nxt>tMax) nxt=tMax/100;
+      tShown=nxt;
+      document.getElementById('habT').value=tShown;
+      redraw();
+    }
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+// ============================================================
 // SSF embed
 // ============================================================
 (function(){
@@ -1454,6 +2702,10 @@ setInterval(function(){
   if(typeof ColicinModule!=='undefined') ColicinModule.tick();
   if(typeof RPSModule!=='undefined') RPSModule.tick();
   if(typeof CSRModule!=='undefined') CSRModule.tick();
+  if(typeof ColicinNSModule!=='undefined') ColicinNSModule.tick();
+  if(typeof KlausmeierModule!=='undefined') KlausmeierModule.tick();
+  if(typeof RWModule!=='undefined') RWModule.tick();
+  if(typeof HabitatModule!=='undefined') HabitatModule.tick();
 }, 40);
 
 })();

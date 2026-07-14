@@ -20,6 +20,10 @@ They support theoretical lectures delivered as part of the course 'Spatial mathe
 | `python/rps-reichenbach.py` | Spatial rock-paper-scissors with mobility | Reichenbach, Mobilia & Frey, *Nature* 448 (2007) 1046-1049 |
 | `python/kerr-rps.py` | C-S-R (colicinogenic/sensitive/resistant) rock-paper-scissors | Kerr, Riley, Feldman & Bohannan, *Nature* 418 (2002) 171-174 |
 | `html/ssf.html` | Step-selection function (movement ecology) simulator | Browser-based, no dependencies |
+| `python/colicin-nospace.py` | Colicin allelopathy, non-spatial (mean-field) phase portrait | Iwasa, Nakamaru & Levin, *Evolutionary Ecology* 12 (1998) 785-802 |
+| `python/klausmeier.py` | Semiarid vegetation patterning (reaction-diffusion-advection) | Klausmeier, *Science* 284 (1999) 1826-1828 |
+| `python/rw.py` | Random walk to diffusion equation | Classic random-walk / diffusion-limit demo |
+| `python/habitat-kareiva.py` | Habitat selection via movement (Markov chain) | Kareiva, *Ecological Monographs* 52 (1982) 261-282 |
 
 ## Requirements
 
