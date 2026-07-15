@@ -109,7 +109,7 @@
 <div class="wrap">
   <header>
     <h1>Step-Selection Function Simulator</h1>
-    <div class="sub"> <em>Step-Selection Functions for Modeling Animal Movement — Virtual rhino</em>, Section 2.</div>
+    <div class="sub"> <em>Step-Selection Functions for Modeling Animal Movement — Virtual rhino</em>, Section 2. Landscape and movement use periodic (wrap-around) boundary conditions.</div>
   </header>
 
   <div class="card">
@@ -125,7 +125,7 @@
           <span><span class="dot" style="background:var(--accent)"></span>Path</span>
         </div>
         <button class="btn" id="btnNewLandscape">&#128256; New landscape</button>
-        <div class="hint" style="margin-top:8px;">Three independent, spatially-smooth covariate surfaces — like the grass / water / trees in Section 2's toy example.</div>
+        <div class="hint" style="margin-top:8px;">Three independent, spatially-smooth, seamlessly-tiling covariate surfaces — like the grass / water / trees in Section 2's toy example, but wrapped on a torus so there's no edge.</div>
       </div>
     </div>
   </div>
@@ -161,7 +161,7 @@
           <button class="btn primary" id="btnRunExplore" style="width:100%;">&#9654; Run <span id="exploreStepsLabel">40</span> steps</button>
           <details class="info">
             <summary>What's happening?</summary>
-            <p>At every move the animal proposes a handful of candidate steps (random length &amp; turning angle, drawn from realistic distributions). Each candidate gets weight w(x) = exp(&beta;&middot;x). One is chosen at random, weighted by those scores — exactly the P(Y) formula from Section 2.</p>
+            <p>At every move the animal proposes a handful of candidate steps (random length &amp; turning angle, drawn from realistic distributions). Each candidate gets weight w(x) = exp(&beta;&middot;x). One is chosen at random, weighted by those scores — exactly the P(Y) formula from Section 2. The landscape wraps: a step that would cross the edge reappears on the opposite side, and step length and turning angle are always drawn from their full, untruncated distributions since there's no boundary to reject candidates against.</p>
           </details>
         </div>
       </div>
@@ -242,7 +242,7 @@
     </div>
   </div>
 
-  <footer>Zero external dependencies — runs fully offline. Landscape = 3 independent smooth random surfaces; movement kernel = Gamma step lengths &times; von-Mises-like turning angles; choice rule = w(x) = exp(&beta;&middot;x). </footer>
+  <footer>Zero external dependencies — runs fully offline. Landscape = 3 independent smooth random surfaces generated on a periodic (toroidal) grid, so it tiles seamlessly; movement kernel = Gamma step lengths &times; von-Mises-like turning angles, sampled unconditionally (no boundary to reject against) with positions wrapped modulo the map on every step; choice rule = w(x) = exp(&beta;&middot;x). </footer>
 </div>
 
 <script>
@@ -271,19 +271,21 @@ function mulberry32(seed){
 let seedCounter=Date.now()%1000000;
 function newRng(){ seedCounter=(seedCounter+104729)%2147483647; return mulberry32(seedCounter); }
 
+// periodic (toroidal) value noise: the coarse control grid wraps, and the
+// fx/fy parametrization spans the domain as one full period, so the
+// generated field tiles seamlessly with itself in both directions.
 function makeField(cols,rows,coarseCols,coarseRows,rng){
   const coarse=[];
-  for(let j=0;j<=coarseRows;j++){const row=[];for(let i=0;i<=coarseCols;i++)row.push(rng());coarse.push(row);}
+  for(let j=0;j<coarseRows;j++){const row=[];for(let i=0;i<coarseCols;i++)row.push(rng());coarse.push(row);}
   const field=new Float64Array(cols*rows);
   let min=Infinity,max=-Infinity;
   for(let y=0;y<rows;y++){
-    const fy=(y/(rows-1))*coarseRows, y0=Math.floor(fy), y1=Math.min(y0+1,coarseRows), ty=fy-y0;
+    const fy=(y/rows)*coarseRows, y0=Math.floor(fy)%coarseRows, y1=(y0+1)%coarseRows, ty=fy-Math.floor(fy);
     for(let x=0;x<cols;x++){
-      const fx=(x/(cols-1))*coarseCols, x0=Math.floor(fx), x1=Math.min(x0+1,coarseCols), tx=fx-x0;
+      const fx=(x/cols)*coarseCols, x0=Math.floor(fx)%coarseCols, x1=(x0+1)%coarseCols, tx=fx-Math.floor(fx);
       const v00=coarse[y0][x0], v10=coarse[y0][x1], v01=coarse[y1][x0], v11=coarse[y1][x1];
       const v0=v00*(1-tx)+v10*tx, v1=v01*(1-tx)+v11*tx;
-      let v=v0*(1-ty)+v1*ty;
-      v+=(rng()-0.5)*0.05;
+      const v=v0*(1-ty)+v1*ty;
       field[y*cols+x]=v;
       if(v<min)min=v; if(v>max)max=v;
     }
@@ -291,11 +293,15 @@ function makeField(cols,rows,coarseCols,coarseRows,rng){
   for(let i=0;i<field.length;i++) field[i]=(field[i]-min)/(max-min);
   return field;
 }
+function wrapMod(v,max){ return ((v%max)+max)%max; }
+// periodic (wrap-around) bilinear sample: x, y can be any real number, not
+// just values inside the grid -- the field is treated as tiling infinitely.
 function sampleField(field,cols,rows,x,y){
-  const xi=Math.max(0,Math.min(cols-1.001,x)), yi=Math.max(0,Math.min(rows-1.001,y));
-  const x0=Math.floor(xi), x1=x0+1, tx=xi-x0, y0=Math.floor(yi), y1=y0+1, ty=yi-y0;
-  const v00=field[y0*cols+x0], v10=field[y0*cols+Math.min(x1,cols-1)];
-  const v01=field[Math.min(y1,rows-1)*cols+x0], v11=field[Math.min(y1,rows-1)*cols+Math.min(x1,cols-1)];
+  const xi=wrapMod(x,cols), yi=wrapMod(y,rows);
+  const x0=Math.floor(xi), x1=(x0+1)%cols, tx=xi-x0;
+  const y0=Math.floor(yi), y1=(y0+1)%rows, ty=yi-y0;
+  const v00=field[y0*cols+x0], v10=field[y0*cols+x1];
+  const v01=field[y1*cols+x0], v11=field[y1*cols+x1];
   const v0=v00*(1-tx)+v10*tx, v1=v01*(1-tx)+v11*tx;
   return v0*(1-ty)+v1*ty;
 }
@@ -327,19 +333,18 @@ function sampleTurnAngle(kappa,rng){
   while(a<-Math.PI)a+=2*Math.PI;
   return a;
 }
+// candidate positions are left unwrapped (true, continuous coordinates);
+// only covariate lookups and rendering wrap them. Because the map has no
+// edge, step length and turning angle are always drawn straight from their
+// nominal Gamma / von-Mises-like distributions -- there is nothing to
+// reject and resample against anymore.
 function proposeCandidates(fields,x,y,heading,k,rng){
   const cands=[];
   for(let i=0;i<k;i++){
-    let L,dtheta,nx,ny,h,tries=0;
-    do{
-      L=sampleGamma(MOVE.gammaShape,MOVE.gammaScale,rng);
-      dtheta=sampleTurnAngle(MOVE.kappa,rng);
-      h=heading+dtheta;
-      nx=x+L*Math.cos(h); ny=y+L*Math.sin(h);
-      tries++;
-    }while((nx<0||nx>=COLS||ny<0||ny>=ROWS)&&tries<20);
-    nx=Math.max(0,Math.min(COLS-1e-6,nx));
-    ny=Math.max(0,Math.min(ROWS-1e-6,ny));
+    const L=sampleGamma(MOVE.gammaShape,MOVE.gammaScale,rng);
+    const dtheta=sampleTurnAngle(MOVE.kappa,rng);
+    const h=heading+dtheta;
+    const nx=x+L*Math.cos(h), ny=y+L*Math.sin(h);
     const cov=fields.map(f=>sampleField(f,COLS,ROWS,nx,ny));
     cands.push({x:nx,y:ny,heading:h,cov});
   }
@@ -417,20 +422,48 @@ function drawLayer(ctx,cell,layerName,fields){
     }
   }
 }
-function drawPath(ctx,cell,path){
-  if(path.length<2){
-    if(path.length===1) drawDot(ctx,cell,path[0]);
-    return;
+
+// Positions in `path` are kept as true, unwrapped coordinates (they can
+// grow arbitrarily as the animal circles the torus many times). For display
+// we wrap the *first* point onto the visible map, then walk the path adding
+// each step's true (always-short) displacement; whenever that running
+// display position exits the map we wrap it back in and start a new
+// sub-path, so a wrap-around never draws as a spurious line across the map.
+function displayPath(path,cols,rows){
+  if(path.length===0) return [];
+  let dispX=wrapMod(path[0].x,cols), dispY=wrapMod(path[0].y,rows);
+  const out=[{x:dispX,y:dispY,breakBefore:false}];
+  for(let i=1;i<path.length;i++){
+    const dx=path[i].x-path[i-1].x, dy=path[i].y-path[i-1].y;
+    dispX+=dx; dispY+=dy;
+    let brk=false;
+    if(dispX<0||dispX>=cols){ dispX=wrapMod(dispX,cols); brk=true; }
+    if(dispY<0||dispY>=rows){ dispY=wrapMod(dispY,rows); brk=true; }
+    out.push({x:dispX,y:dispY,breakBefore:brk});
   }
+  return out;
+}
+function strokeDisplayPath(ctx,cell,dpts,color,width){
+  if(dpts.length<2) return;
   ctx.beginPath();
-  ctx.moveTo(path[0].x*cell,path[0].y*cell);
-  for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x*cell,path[i].y*cell);
+  ctx.moveTo(dpts[0].x*cell,dpts[0].y*cell);
+  for(let i=1;i<dpts.length;i++){
+    if(dpts[i].breakBefore) ctx.moveTo(dpts[i].x*cell,dpts[i].y*cell);
+    else ctx.lineTo(dpts[i].x*cell,dpts[i].y*cell);
+  }
   ctx.lineJoin='round'; ctx.lineCap='round';
-  ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=5.5; ctx.stroke();
-  ctx.strokeStyle='#d7263d'; ctx.lineWidth=2.6; ctx.stroke();
-  drawDot(ctx,cell,path[path.length-1]);
+  ctx.strokeStyle=color; ctx.lineWidth=width;
+  ctx.stroke();
+}
+function drawPath(ctx,cell,path){
+  if(path.length===0) return;
+  const dpts=displayPath(path,COLS,ROWS);
+  if(dpts.length<2){ drawDot(ctx,cell,dpts[0]); return; }
+  strokeDisplayPath(ctx,cell,dpts,'rgba(255,255,255,0.85)',5.5);
+  strokeDisplayPath(ctx,cell,dpts,'#d7263d',2.6);
+  drawDot(ctx,cell,dpts[dpts.length-1]);
   // start marker
-  ctx.beginPath(); ctx.arc(path[0].x*cell,path[0].y*cell,4,0,7); ctx.fillStyle='#1f2937'; ctx.fill();
+  ctx.beginPath(); ctx.arc(dpts[0].x*cell,dpts[0].y*cell,4,0,7); ctx.fillStyle='#1f2937'; ctx.fill();
 }
 function drawDot(ctx,cell,p){
   ctx.beginPath(); ctx.arc(p.x*cell,p.y*cell,6,0,7);
@@ -439,22 +472,31 @@ function drawDot(ctx,cell,p){
 }
 function drawGhost(ctx,cell,path){
   if(path.length<2) return;
+  const dpts=displayPath(path,COLS,ROWS);
   ctx.beginPath();
-  ctx.moveTo(path[0].x*cell,path[0].y*cell);
-  for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x*cell,path[i].y*cell);
+  ctx.moveTo(dpts[0].x*cell,dpts[0].y*cell);
+  for(let i=1;i<dpts.length;i++){
+    if(dpts[i].breakBefore) ctx.moveTo(dpts[i].x*cell,dpts[i].y*cell);
+    else ctx.lineTo(dpts[i].x*cell,dpts[i].y*cell);
+  }
   ctx.lineJoin='round'; ctx.lineCap='round';
   ctx.strokeStyle='rgba(120,110,95,0.45)'; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
 }
+// candidate rays: drawn from the current position's wrapped display location
+// plus each candidate's true (short) displacement -- never independently
+// re-wrapped, so a single step never appears to jump across the map.
 function drawRays(ctx,cell,from,candidates,probs){
+  const fx=wrapMod(from.x,COLS), fy=wrapMod(from.y,ROWS);
   candidates.forEach((c,i)=>{
     const p=probs[i];
+    const tx=fx+(c.x-from.x), ty=fy+(c.y-from.y);
     ctx.beginPath();
-    ctx.moveTo(from.x*cell,from.y*cell);
-    ctx.lineTo(c.x*cell,c.y*cell);
+    ctx.moveTo(fx*cell,fy*cell);
+    ctx.lineTo(tx*cell,ty*cell);
     ctx.lineWidth=1+p*9;
     ctx.strokeStyle=`rgba(30,28,25,${0.15+p*0.55})`;
     ctx.stroke();
-    ctx.beginPath(); ctx.arc(c.x*cell,c.y*cell,2.5+p*5,0,7);
+    ctx.beginPath(); ctx.arc(tx*cell,ty*cell,2.5+p*5,0,7);
     ctx.fillStyle=`rgba(30,28,25,${0.3+p*0.5})`; ctx.fill();
   });
 }
@@ -536,7 +578,7 @@ async function runExplore(){
   const rng=newRng();
   exploreState.ghost=exploreState.path;
   exploreState.path=[];
-  let x=8+rng()*(COLS-16), y=8+rng()*(ROWS-16), heading=rng()*2*Math.PI;
+  let x=rng()*COLS, y=rng()*ROWS, heading=rng()*2*Math.PI;
   exploreState.path.push({x,y});
   const N=getExploreSteps();
   for(let t=0;t<N;t++){
@@ -638,7 +680,7 @@ async function runChallenge(){
   const k=challengeState.k;
   const Nmax=getChallengeSteps(), animateFirst=20;
   challengeState.path=[]; challengeState.strata=[];
-  let x=10+rng()*(COLS-20), y=10+rng()*(ROWS-20), heading=rng()*2*Math.PI;
+  let x=rng()*COLS, y=rng()*ROWS, heading=rng()*2*Math.PI;
   challengeState.path.push({x,y});
 
   for(let t=0;t<Nmax;t++){
@@ -770,4 +812,4 @@ regenerateLandscape();
 })();
 </script>
 </body>
-</html> 
+</html>
