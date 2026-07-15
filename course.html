@@ -195,6 +195,14 @@
         </div>
         <button class="btn primary square" data-target="panelKlausmeier">Open</button>
       </div>
+      <div class="home-card">
+        <div class="home-card-text">
+          <h3>Semiarid vegetation &mdash; find the tipping point</h3>
+          <p>Flat-terrain variant (no slope, no fixed-point curves shown). Step rainfall by fixed increments; each step kicks the vegetation field with a small perturbation so you can discover the tipping point and hysteresis empirically.</p>
+          <div class="ref">Klausmeier, Science 284 (1999)</div>
+        </div>
+        <button class="btn primary square" data-target="panelKlausmeierTipping">Open</button>
+      </div>
     </div>
   </div>
 
@@ -509,6 +517,47 @@
               <span><span class="dot" style="background:#8bc34a"></span>vegetated, unstable</span>
               <span><span class="dot" style="background:#8a5a2b"></span>bare soil, stable</span>
               <span><span class="dot" style="background:#d7263d"></span>2D sim. (mean N)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= KLAUSMEIER TIPPING-POINT (FLAT TERRAIN) ================= -->
+  <div class="panel" id="panelKlausmeierTipping">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Semiarid vegetation patterning &mdash; find the tipping point</h2>
+    <div class="sectionsub">Flat-terrain variant (v = 0, no slope): short-range plant self-activation vs. long-range water inhibition self-organizes into patches. No fixed-point curves are shown &mdash; step rainfall with the buttons below to kick the field and discover the tipping point and hysteresis empirically. Klausmeier, Science 284 (1999).</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>a (rainfall) <span class="readout" id="ktAVal">2.00</span></label><input type="range" id="ktA" min="0.05" max="5" step="0.05" value="2.0"></div>
+          <div style="display:flex;gap:8px;margin:-4px 0 10px;">
+            <button class="btn small" id="ktAMinus" style="flex:1;">&minus; 0.1 (+ kick)</button>
+            <button class="btn small" id="ktAPlus" style="flex:1;">+ 0.1 (+ kick)</button>
+          </div>
+          <div class="field"><label>m (plant mortality) <span class="readout" id="ktMVal">0.45</span></label><input type="range" id="ktM" min="0.05" max="1.5" step="0.05" value="0.45"></div>
+          <div class="field"><label>R (growth yield) <span class="readout" id="ktRVal">1.00</span></label><input type="range" id="ktR" min="0.1" max="3" step="0.1" value="1.0"></div>
+          <div class="field"><label>D<sub>n</sub> (plant diffusion) <span class="readout" id="ktDnVal">1.00</span></label><input type="range" id="ktDn" min="0.02" max="2" step="0.02" value="1.0"></div>
+          <div class="field"><label>D<sub>w</sub> (water diffusion) <span class="readout" id="ktDwVal">2.0</span></label><input type="range" id="ktDw" min="0" max="40" step="0.5" value="2.0"></div>
+          <button class="btn primary" id="ktPause" style="width:100%;margin:8px 0;">Pause</button>
+          <button class="btn" id="ktReset" style="width:100%;">Reset field</button>
+          <div class="info-line" id="ktTime">t = 0.0</div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="row">
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Plant biomass N(X,Y,t) &mdash; flat terrain</h3>
+            <canvas class="stage grid-canvas" id="ktField" width="380" height="380"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;font-size:15px;">Rainfall vs. mean vegetation</h3>
+            <canvas class="stage chart-canvas" id="ktTrail" width="480" height="380"></canvas>
+            <div class="legend-inline">
+              <span><span class="dot" style="background:#9e9e9e"></span>trajectory as rainfall is stepped</span>
+              <span><span class="dot" style="background:#d7263d"></span>current state</span>
             </div>
           </div>
         </div>
@@ -3062,6 +3111,153 @@ const IBMPatternModule = (function(){
 })();
 
 // ============================================================
+// Klausmeier flat-terrain "find the tipping point" variant.
+// Parameters kept identical to klausmeier-tipping.py, including
+// the integration mesh size.
+// ============================================================
+const KlausmeierTippingModule = (function(){
+  const NX=41, NY=41, LX=40.0, LY=40.0;
+  const DX=LX/NX, DY=LY/NY;
+  const DT=0.005, SUBSTEPS_PER_FRAME=120;
+  const N_CAP=200.0, W_CAP=50.0;
+
+  const RAINFALL_STEP=0.1;
+  const PERTURB_FRACTION=0.02;
+  const BARE_SOIL_PERTURB_AMPLITUDE=0.4;
+  const BARE_SOIL_THRESHOLD=0.2;
+  const A_MIN=0.05, A_MAX=5.0;
+  const TRAIL_MAXLEN=4000;
+
+  const params={a:2.0,m:0.45,R:1.0,Dn:1.0,Dw:2.0};
+  let W,N,tElapsed=0,paused=false;
+  let trailA=[],trailN=[];
+
+  const xm1=new Int32Array(NX), xp1=new Int32Array(NX);
+  for(let x=0;x<NX;x++){ xm1[x]=(x-1+NX)%NX; xp1[x]=(x+1)%NX; }
+  const ym1=new Int32Array(NY), yp1=new Int32Array(NY);
+  for(let y=0;y<NY;y++){ ym1[y]=(y-1+NY)%NY; yp1[y]=(y+1)%NY; }
+
+  function nontrivialEquilibrium(a,m,R){
+    const disc=(a*R)*(a*R)-4*m*m;
+    if(disc<0) return null;
+    const nPlus=(a*R+Math.sqrt(disc))/(2*m);
+    const wPlus=m/(R*nPlus);
+    return [wPlus,nPlus];
+  }
+  function initFields(){
+    const eq=nontrivialEquilibrium(params.a,params.m,params.R);
+    let w0,n0;
+    if(!eq){ w0=params.a; n0=0.0; } else { [w0,n0]=eq; }
+    const Wa=new Float64Array(NX*NY), Na=new Float64Array(NX*NY);
+    for(let i=0;i<NX*NY;i++){
+      Wa[i]=Math.max(0, w0+0.01*gaussianRandom());
+      Na[i]=Math.max(0, n0+0.05*Math.max(n0,0.1)*gaussianRandom());
+    }
+    return [Wa,Na];
+  }
+  [W,N]=initFields();
+
+  function meanN(){ let s=0; for(let i=0;i<N.length;i++) s+=N[i]; return s/N.length; }
+
+  function step(){
+    const a=params.a,m=params.m,R=params.R,Dn=params.Dn,Dw=params.Dw;
+    for(let s=0;s<SUBSTEPS_PER_FRAME;s++){
+      const Wnew=new Float64Array(NX*NY), Nnew=new Float64Array(NX*NY);
+      for(let y=0;y<NY;y++){
+        const y0=y*NX, yU=ym1[y]*NX, yD=yp1[y]*NX;
+        for(let x=0;x<NX;x++){
+          const idx=y0+x;
+          const wv=W[idx], nv=N[idx];
+          const lapW=(W[y0+xp1[x]]+W[y0+xm1[x]]+W[yD+x]+W[yU+x]-4*wv)/(DX*DY);
+          const lapN=(N[y0+xp1[x]]+N[y0+xm1[x]]+N[yD+x]+N[yU+x]-4*nv)/(DX*DY);
+          const uptake=wv*nv*nv;
+          const dWdt=a-wv-uptake+Dw*lapW;
+          const dNdt=R*uptake-m*nv+Dn*lapN;
+          Wnew[idx]=Math.min(W_CAP,Math.max(0,wv+DT*dWdt));
+          Nnew[idx]=Math.min(N_CAP,Math.max(0,nv+DT*dNdt));
+        }
+      }
+      W=Wnew; N=Nnew;
+    }
+    tElapsed+=DT*SUBSTEPS_PER_FRAME;
+  }
+
+  function perturbVegetation(){
+    const eq=nontrivialEquilibrium(params.a,params.m,params.R);
+    const nUniform=eq?eq[1]:0.0;
+    let amplitude;
+    if(meanN()<BARE_SOIL_THRESHOLD) amplitude=BARE_SOIL_PERTURB_AMPLITUDE;
+    else amplitude=PERTURB_FRACTION*nUniform;
+    if(amplitude<=0) return;
+    for(let i=0;i<N.length;i++) N[i]=Math.min(N_CAP,Math.max(0,N[i]+amplitude*gaussianRandom()));
+  }
+  function recordTrailPoint(){
+    trailA.push(params.a); trailN.push(meanN());
+    if(trailA.length>TRAIL_MAXLEN){ trailA.shift(); trailN.shift(); }
+  }
+  function stepRainfall(delta){
+    let newA=Math.round((params.a+delta)*100)/100;
+    newA=Math.max(A_MIN,Math.min(A_MAX,newA));
+    params.a=newA;
+    document.getElementById('ktA').value=newA;
+    syncReadouts();
+    perturbVegetation();
+    recordTrailPoint();
+    render();
+  }
+
+  function render(){
+    let maxN=0; for(let i=0;i<N.length;i++) if(N[i]>maxN) maxN=N[i];
+    renderHeatmap(document.getElementById('ktField'), N, NX, NY, 0, Math.max(1,maxN));
+
+    const trailSeries={color:'#9e9e9e',width:1.2,alpha:0.7,data:trailA.map((a,i)=>({x:a,y:trailN[i]}))};
+    drawSeriesChart(document.getElementById('ktTrail'),{
+      series:[trailSeries],
+      xMin:0,xMax:2.5,yMin:0,yMax:5,
+      xlabel:'Rainfall a',ylabel:'mean vegetation N',
+      points:[{x:params.a,y:meanN(),color:'#d7263d',r:6}]
+    });
+    document.getElementById('ktTime').textContent='t = '+tElapsed.toFixed(1)+'   mean N = '+meanN().toFixed(3)+'   a = '+params.a.toFixed(2);
+  }
+
+  function syncReadouts(){
+    document.getElementById('ktAVal').textContent=params.a.toFixed(2);
+    document.getElementById('ktMVal').textContent=params.m.toFixed(2);
+    document.getElementById('ktRVal').textContent=params.R.toFixed(2);
+    document.getElementById('ktDnVal').textContent=params.Dn.toFixed(2);
+    document.getElementById('ktDwVal').textContent=params.Dw.toFixed(1);
+  }
+
+  function init(){
+    document.getElementById('ktA').addEventListener('input', e=>{ params.a=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('ktM').addEventListener('input', e=>{ params.m=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('ktR').addEventListener('input', e=>{ params.R=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('ktDn').addEventListener('input', e=>{ params.Dn=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('ktDw').addEventListener('input', e=>{ params.Dw=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('ktAMinus').addEventListener('click', ()=>stepRainfall(-RAINFALL_STEP));
+    document.getElementById('ktAPlus').addEventListener('click', ()=>stepRainfall(RAINFALL_STEP));
+    const pauseBtn=document.getElementById('ktPause');
+    pauseBtn.addEventListener('click', ()=>{ paused=!paused; pauseBtn.textContent = paused?'Resume':'Pause'; });
+    document.getElementById('ktReset').addEventListener('click', ()=>{
+      [W,N]=initFields(); tElapsed=0; trailA=[]; trailN=[]; render();
+    });
+    syncReadouts();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelKlausmeierTipping')) return;
+    if(!paused){
+      step();
+      recordTrailPoint();
+    }
+    render();
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+// ============================================================
 // SSF embed
 // ============================================================
 (function(){
@@ -3085,6 +3281,7 @@ setInterval(function(){
   if(typeof RWModule!=='undefined') RWModule.tick();
   if(typeof HabitatModule!=='undefined') HabitatModule.tick();
   if(typeof IBMPatternModule!=='undefined') IBMPatternModule.tick();
+  if(typeof KlausmeierTippingModule!=='undefined') KlausmeierTippingModule.tick();
 }, 40);
 
 })();
