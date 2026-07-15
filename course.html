@@ -125,6 +125,14 @@
       </div>
       <div class="home-card">
         <div class="home-card-text">
+          <h3>Spatial pattern formation (IBM vs. mean-field)</h3>
+          <p>A 1D individual-based birth-death model with Gaussian dispersal and top-hat competition, run side-by-side with its mean-field density-equation approximation. Watch a periodic clustering pattern emerge from the individual-based dynamics and compare it to the deterministic prediction in real time.</p>
+          <div class="ref">Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025)</div>
+        </div>
+        <button class="btn primary square" data-target="panelIBMPattern">Open</button>
+      </div>
+      <div class="home-card">
+        <div class="home-card-text">
           <h3>Colicin allelopathy (non-spatial)</h3>
           <p>The mean-field limit of the colicin lattice model: a phase portrait of producer vs. sensitive frequencies. Drag the cost and toxicity sliders to flip between monostable dominance and bistability, and click anywhere to launch a new trajectory.</p>
           <div class="ref">Iwasa, Nakamaru &amp; Levin, Evolutionary Ecology 12 (1998)</div>
@@ -628,6 +636,43 @@
     </div>
   </div>
 
+  <!-- ================= IBM PATTERN FORMATION ================= -->
+  <div class="panel" id="panelIBMPattern">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Spatial pattern formation: IBM vs. mean-field density equation</h2>
+    <div class="sectionsub">1D individual-based birth-death model with Gaussian dispersal and top-hat competition, periodic domain, alongside its mean-field (density-field) PDE approximation. Surendran, Pinto-Ramos, Menezes &amp; Martinez-Garcia, Physica D 477 (2025), Section 3.2.</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>Growth rate b <span class="readout" id="ibmBVal">3.05</span></label><input type="range" id="ibmB" min="0.5" max="6" step="0.05" value="3.05"></div>
+          <div class="field"><label>Death rate d <span class="readout" id="ibmDVal">0.305</span></label><input type="range" id="ibmD" min="0.05" max="2" step="0.005" value="0.305"></div>
+          <div class="field"><label>Dispersal width s <span class="readout" id="ibmSVal">0.15</span></label><input type="range" id="ibmS" min="0.05" max="1.5" step="0.01" value="0.15"></div>
+          <div class="field"><label>Competition width r_c <span class="readout" id="ibmRcVal">2.20</span></label><input type="range" id="ibmRc" min="0.1" max="5" step="0.05" value="2.2"></div>
+          <div class="field"><label>Sim. speed (steps/frame) <span class="readout" id="ibmSpeedVal">4</span></label><input type="range" id="ibmSpeed" min="1" max="25" step="1" value="4"></div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin:8px 0;"><input type="checkbox" id="ibmShowPde"> Show PDE solution</label>
+          <button class="btn primary" id="ibmPause" style="width:100%;margin-bottom:8px;">Pause</button>
+          <button class="btn" id="ibmReset" style="width:100%;">Reset lattice</button>
+          <div class="hint" style="margin-top:10px;">Both the IBM and the PDE start from the same random lattice configuration (Poisson-distributed near the homogeneous mean-field density) so you can watch them diverge or converge as a pattern forms. Changing b, d, s, or r_c reseeds the lattice; the speed slider only changes how many steps run per frame.</div>
+          <div class="info-line" id="ibmInfo"></div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">Lattice state</h3>
+          <canvas class="stage chart-canvas" id="ibmLattice" width="700" height="260"></canvas>
+          <div class="legend-inline">
+            <span><span class="dot" style="background:#2e7d32"></span>IBM (individuals per cell)</span>
+            <span><span class="dot" style="background:#d84315"></span>mean-field PDE</span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px;">
+          <h3 style="margin:0 0 8px;font-size:15px;">Space-time (kymograph) of the IBM density, newest at top</h3>
+          <canvas class="stage grid-canvas" id="ibmKymo" width="700" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= SSF (embedded, byte-identical) ================= -->
   <div class="panel" id="panelSSF">
     <button class="btn backbtn" data-home>&larr; Back to menu</button>
@@ -711,6 +756,12 @@ function drawSeriesChart(canvas, opts){
       ctx.beginPath(); ctx.moveTo(X(rl.x),padT); ctx.lineTo(X(rl.x),padT+plotH); ctx.stroke();
     }
     ctx.restore();
+  });
+  (opts.bars||[]).forEach(b=>{
+    const x0=X(b.x-b.width/2), x1=X(b.x+b.width/2);
+    const y0=Y(0), y1=Y(b.value);
+    ctx.fillStyle=b.color||'#2e7d32';
+    ctx.fillRect(Math.min(x0,x1), Math.min(y0,y1), Math.max(1,Math.abs(x1-x0)), Math.abs(y0-y1));
   });
   series.forEach(s=>{
     if(!s.data || s.data.length===0) return;
@@ -2826,6 +2877,191 @@ const HabitatModule = (function(){
 })();
 
 // ============================================================
+// 1D spatial birth-death IBM vs. mean-field density-equation PDE
+// (Surendran, Pinto-Ramos, Menezes & Martinez-Garcia 2025, Sec. 3.2)
+// ============================================================
+const IBMPatternModule = (function(){
+  const L=20.0, M=200, DX=L/M;
+  const xArr=new Float64Array(M);
+  for(let i=0;i<M;i++) xArr[i]=-L/2+DX*(i+0.5);
+
+  const DT=0.01;
+  const MAX_ROWS=180;
+
+  const params={b:3.05,d:0.305,g:1.0,s:0.15,rc:2.2};
+  let substeps=4, paused=false, showPde=false;
+  let N_ibm=null, N_pde=null, t=0, kD=null, kC=null, history=[];
+
+  function poissonRandom(lambda){
+    if(lambda<=0) return 0;
+    if(lambda<30){
+      const Lp=Math.exp(-lambda);
+      let k=0,p=1;
+      do{ k++; p*=Math.random(); } while(p>Lp);
+      return k-1;
+    }
+    const u1=Math.random(), u2=Math.random();
+    const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    return Math.max(0, Math.round(lambda+Math.sqrt(lambda)*z));
+  }
+  function circDist(k){ return Math.min(k,M-k)*DX; }
+  function makeKernel(fn){
+    const arr=new Float64Array(M);
+    for(let k=0;k<M;k++) arr[k]=fn(circDist(k));
+    let sum=0; for(let k=0;k<M;k++) sum+=arr[k];
+    const norm=sum*DX;
+    if(norm>0) for(let k=0;k<M;k++) arr[k]/=norm;
+    return arr;
+  }
+  function gaussianKernel(s){ return makeKernel(r=>Math.exp(-(r*r)/(2*s*s))/(Math.sqrt(2*Math.PI)*s)); }
+  function tophatKernel(rc){ return makeKernel(r=> r<=rc?1:0); }
+  function conv(N,kernel){
+    const out=new Float64Array(M);
+    for(let i=0;i<M;i++){
+      let s=0;
+      for(let j=0;j<M;j++) s+=kernel[(i-j+M)%M]*N[j];
+      out[i]=s*DX;
+    }
+    return out;
+  }
+
+  function stepIBM(N){
+    const birth=conv(N,kD), comp=conv(N,kC);
+    const Nnew=new Float64Array(M);
+    for(let i=0;i<M;i++){
+      const birthRate=params.b*birth[i];
+      const deathRate=N[i]*(params.d+params.g*comp[i]);
+      const births=poissonRandom(Math.max(birthRate*DT,0));
+      let deaths=poissonRandom(Math.max(deathRate*DT,0));
+      deaths=Math.min(deaths,N[i]);
+      Nnew[i]=Math.max(0,N[i]+births-deaths);
+    }
+    return Nnew;
+  }
+  function stepPDE(N){
+    const birth=conv(N,kD), comp=conv(N,kC);
+    const Nnew=new Float64Array(M);
+    for(let i=0;i<M;i++){
+      const birthRate=params.b*birth[i];
+      const deathRate=N[i]*(params.d+params.g*comp[i]);
+      Nnew[i]=Math.max(0,N[i]+DT*(birthRate-deathRate));
+    }
+    return Nnew;
+  }
+
+  function reinit(){
+    const nh=Math.max(params.b-params.d,0)/params.g;
+    const N0=new Float64Array(M);
+    for(let i=0;i<M;i++) N0[i]=poissonRandom(Math.max(nh*DX,1e-9));
+    N_ibm=N0.slice(); N_pde=N0.slice();
+    t=0;
+    kD=gaussianKernel(params.s);
+    kC=tophatKernel(params.rc);
+    history=[N0.slice()];
+  }
+  reinit();
+
+  function step(){
+    for(let s=0;s<substeps;s++){
+      N_ibm=stepIBM(N_ibm);
+      N_pde=stepPDE(N_pde);
+      t+=DT;
+    }
+    history.unshift(N_ibm.slice());
+    if(history.length>MAX_ROWS) history.pop();
+  }
+
+  function renderKymo(){
+    const canvas=document.getElementById('ibmKymo');
+    const rows=history.length;
+    let vmax=1;
+    for(let r=0;r<rows;r++){ const row=history[r]; for(let i=0;i<M;i++) if(row[i]>vmax) vmax=row[i]; }
+    let off=canvas._offCanvasKymo;
+    if(!off || off.width!==M || off.height!==MAX_ROWS){
+      off=document.createElement('canvas'); off.width=M; off.height=MAX_ROWS;
+      canvas._offCanvasKymo=off;
+    }
+    const octx=off.getContext('2d');
+    const img=octx.createImageData(M,MAX_ROWS);
+    for(let r=0;r<MAX_ROWS;r++){
+      const row = r<rows ? history[r] : null;
+      for(let i=0;i<M;i++){
+        const v = row ? row[i]/vmax : 0;
+        const c = row ? heatColor(v) : [255,255,255];
+        const o=(r*M+i)*4;
+        img.data[o]=c[0]; img.data[o+1]=c[1]; img.data[o+2]=c[2]; img.data[o+3]=255;
+      }
+    }
+    octx.putImageData(img,0,0);
+    const ctx=canvas.getContext('2d');
+    ctx.imageSmoothingEnabled=false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(off,0,0,canvas.width,canvas.height);
+  }
+
+  function render(){
+    let ymax=Math.max(1.0, Math.max(...N_ibm)*1.2);
+    if(showPde) ymax=Math.max(ymax, Math.max(...N_pde)*1.2);
+    const bars=[];
+    for(let i=0;i<M;i++) bars.push({x:xArr[i],width:DX*0.9,value:N_ibm[i],color:'#2e7d32'});
+    const series=[];
+    if(showPde){
+      const data=[]; for(let i=0;i<M;i++) data.push({x:xArr[i],y:N_pde[i]});
+      series.push({color:'#d84315',width:2,data});
+    }
+    drawSeriesChart(document.getElementById('ibmLattice'),{
+      bars, series,
+      xMin:-L/2, xMax:L/2, yMin:0, yMax:ymax,
+      xlabel:'space, x', ylabel:'individuals / cell'
+    });
+    renderKymo();
+
+    const sumIbm=N_ibm.reduce((a,v)=>a+v,0);
+    const sumPde=N_pde.reduce((a,v)=>a+v,0);
+    document.getElementById('ibmInfo').textContent =
+      't = '+t.toFixed(2)+'\nN_IBM = '+sumIbm.toFixed(0)+(showPde?('\nN_PDE = '+sumPde.toFixed(1)):'');
+  }
+
+  function syncReadouts(){
+    document.getElementById('ibmBVal').textContent=params.b.toFixed(2);
+    document.getElementById('ibmDVal').textContent=params.d.toFixed(3);
+    document.getElementById('ibmSVal').textContent=params.s.toFixed(2);
+    document.getElementById('ibmRcVal').textContent=params.rc.toFixed(2);
+    document.getElementById('ibmSpeedVal').textContent=substeps;
+  }
+
+  function onParamChange(){
+    params.b=parseFloat(document.getElementById('ibmB').value);
+    params.d=parseFloat(document.getElementById('ibmD').value);
+    params.s=parseFloat(document.getElementById('ibmS').value);
+    params.rc=parseFloat(document.getElementById('ibmRc').value);
+    syncReadouts();
+    reinit();
+    render();
+  }
+
+  function init(){
+    ['ibmB','ibmD','ibmS','ibmRc'].forEach(id=>document.getElementById(id).addEventListener('input', onParamChange));
+    document.getElementById('ibmSpeed').addEventListener('input', e=>{ substeps=parseInt(e.target.value,10); syncReadouts(); });
+    document.getElementById('ibmShowPde').addEventListener('change', e=>{ showPde=e.target.checked; render(); });
+    const pauseBtn=document.getElementById('ibmPause');
+    pauseBtn.addEventListener('click', ()=>{ paused=!paused; pauseBtn.textContent = paused?'Resume':'Pause'; });
+    document.getElementById('ibmReset').addEventListener('click', ()=>{ reinit(); render(); });
+
+    syncReadouts();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelIBMPattern')) return;
+    if(!paused) step();
+    render();
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+// ============================================================
 // SSF embed
 // ============================================================
 (function(){
@@ -2848,6 +3084,7 @@ setInterval(function(){
   if(typeof KlausmeierModule!=='undefined') KlausmeierModule.tick();
   if(typeof RWModule!=='undefined') RWModule.tick();
   if(typeof HabitatModule!=='undefined') HabitatModule.tick();
+  if(typeof IBMPatternModule!=='undefined') IBMPatternModule.tick();
 }, 40);
 
 })();
