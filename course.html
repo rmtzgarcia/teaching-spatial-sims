@@ -222,6 +222,13 @@
                 <button data-kernel="tophat" style="flex:1;">Top-hat</button>
               </div>
             </div>
+            <div class="field" style="grid-column:1/3;">
+              <label>Initial condition</label>
+              <div class="toggle-group" id="plantICToggle" style="width:100%;display:flex;">
+                <button data-ic="random" class="active" style="flex:1;">Random</button>
+                <button data-ic="clustered" style="flex:1;">Clustered (center)</button>
+              </div>
+            </div>
             <div class="field">
               <label>b (birth rate) <span class="readout" id="plantBVal">3.05</span></label>
               <input type="number" id="plantB" value="3.05" step="0.05">
@@ -1156,8 +1163,9 @@ function gaussianRandom(){
 // Plant community competition model (Surendran et al. 2025)
 // ============================================================
 const PlantModule = (function(){
-  const DOMAIN_L=20.0, MAX_N_INIT=4000, EVENTS_PER_FRAME=150;
+  const DOMAIN_L=20.0, MAX_N_INIT=4000, EVENTS_PER_FRAME=150, CLUSTERED_N_INIT=20, CLUSTERED_JITTER=0.5;
   let kernelType='gaussian';
+  let icType='random';
   let rc=2.0, s=0.3, b=3.05, d=0.305, g=1.0;
   let positions=[], compSum=[], t=0, tHist=[0], nHist=[0];
   let running=false;
@@ -1184,9 +1192,23 @@ const PlantModule = (function(){
   }
 
   function resetModel(){
-    const nInit=Math.max(10, Math.min(MAX_N_INIT, Math.round(predictedEq(b,d,g)) || 10));
     positions=[];
-    for(let i=0;i<nInit;i++) positions.push({x:Math.random()*DOMAIN_L, y:Math.random()*DOMAIN_L});
+    if(icType==='clustered'){
+      // Point-release/founder colonization: a small clump at the domain
+      // center (tight Gaussian jitter so individuals aren't literally
+      // coincident), independent of the well-mixed equilibrium count --
+      // this is meant to be watched invading/spreading outward.
+      const cx=DOMAIN_L/2, cy=DOMAIN_L/2;
+      for(let i=0;i<CLUSTERED_N_INIT;i++){
+        positions.push({
+          x:((cx+gaussianRandom()*CLUSTERED_JITTER)%DOMAIN_L+DOMAIN_L)%DOMAIN_L,
+          y:((cy+gaussianRandom()*CLUSTERED_JITTER)%DOMAIN_L+DOMAIN_L)%DOMAIN_L
+        });
+      }
+    } else {
+      const nInit=Math.max(10, Math.min(MAX_N_INIT, Math.round(predictedEq(b,d,g)) || 10));
+      for(let i=0;i<nInit;i++) positions.push({x:Math.random()*DOMAIN_L, y:Math.random()*DOMAIN_L});
+    }
     t=0; tHist=[0]; nHist=[positions.length];
     nHistMin=positions.length; nHistMax=positions.length;
     compSum=new Array(positions.length).fill(0);
@@ -1349,6 +1371,14 @@ const PlantModule = (function(){
       document.getElementById('plantRc').value=rc;
       document.getElementById('plantS').value=s;
       syncReadouts();
+      resetModel();
+      render();
+    });
+    document.getElementById('plantICToggle').addEventListener('click', e=>{
+      const btn=e.target.closest('button'); if(!btn) return;
+      document.querySelectorAll('#plantICToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      icType=btn.dataset.ic;
       resetModel();
       render();
     });
