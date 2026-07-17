@@ -104,7 +104,7 @@
   <!-- ================= HOME ================= -->
   <div class="panel active" id="panelHome">
     <div class="card">
-      <p style="margin:0;color:var(--muted)">Eleven interactive simulations of classic models in spatial ecology and evolutionary game theory, all running locally in your browser — no installation needed. Pick a demo below.</p>
+      <p style="margin:0;color:var(--muted)">Thirteen interactive simulations of classic models in spatial ecology and evolutionary game theory, all running locally in your browser — no installation needed. Pick a demo below.</p>
     </div>
     <div class="home-grid">
       <div class="home-card">
@@ -202,6 +202,14 @@
           <div class="ref">Klausmeier, Science 284 (1999)</div>
         </div>
         <button class="btn primary square" data-target="panelKlausmeierTipping">Open</button>
+      </div>
+      <div class="home-card">
+        <div class="home-card-text">
+          <h3>Diffusion vs. Fisher-KPP: front propagation</h3>
+          <p>The same initial pulse evolved under the plain diffusion equation and under Fisher-KPP. Diffusion spreads and flattens with no fixed height; FKPP holds at u=1 behind a traveling front. Toggle each solution on/off and tune the diffusion coefficients and the growth rate r independently.</p>
+          <div class="ref">Fisher, Ann. Eugenics 7 (1937); Kolmogorov, Petrovsky &amp; Piskunov (1937)</div>
+        </div>
+        <button class="btn primary square" data-target="panelDiffFKPP">Open</button>
       </div>
     </div>
   </div>
@@ -724,6 +732,39 @@
         <div class="card" style="margin-top:12px;">
           <h3 style="margin:0 0 8px;font-size:15px;">Space-time (kymograph) of the IBM density, newest at top</h3>
           <canvas class="stage grid-canvas" id="ibmKymo" width="700" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DIFFUSION vs FKPP ================= -->
+  <div class="panel" id="panelDiffFKPP">
+    <button class="btn backbtn" data-home>&larr; Back to menu</button>
+    <h2 class="sectiontitle">Diffusion equation vs. Fisher-KPP: front propagation</h2>
+    <div class="sectionsub">Same initial pulse u(x,0), evolved under &part;u/&part;t = D&nbsp;&part;&sup2;u/&part;x&sup2; (plain diffusion) and under &part;u/&part;t = D&nbsp;&part;&sup2;u/&part;x&sup2; + r&thinsp;u(1&minus;u) (Fisher-KPP), periodic domain. Diffusion spreads and decays with no floor; FKPP holds at u=1 behind a traveling front moving at speed &asymp; 2&radic;(rD).</div>
+    <div class="layout">
+      <div class="sidebar">
+        <div class="card">
+          <div class="field"><label>D (diffusion equation) <span class="readout" id="dfDdiffVal">1.00</span></label><input type="range" id="dfDdiff" min="0" max="3" step="0.05" value="1.0"></div>
+          <div class="field"><label>D (Fisher-KPP) <span class="readout" id="dfDfkppVal">1.00</span></label><input type="range" id="dfDfkpp" min="0" max="3" step="0.05" value="1.0"></div>
+          <div class="field"><label>r (FKPP growth rate) <span class="readout" id="dfRVal">1.00</span></label><input type="range" id="dfR" min="0" max="5" step="0.05" value="1.0"></div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin:10px 0 4px;"><input type="checkbox" id="dfShowDiff" checked> Show diffusion equation solution</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin:0 0 10px;"><input type="checkbox" id="dfShowFkpp" checked> Show Fisher-KPP solution</label>
+          <button class="btn primary" id="dfPause" style="width:100%;margin-bottom:8px;">Pause</button>
+          <button class="btn" id="dfReset" style="width:100%;">Reset</button>
+          <div class="hint" style="margin-top:10px;">Both equations start from the same localized pulse. Reset reseeds that pulse and restarts time; the sliders and checkboxes act live on the running simulation without resetting it.</div>
+          <div class="info-line" id="dfInfo"></div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <h3 style="margin:0 0 8px;font-size:15px;">u(x,t)</h3>
+          <canvas class="stage chart-canvas" id="dfChart" width="700" height="380"></canvas>
+          <div class="legend-inline">
+            <span><span class="dot" style="background:#c9c2b2"></span>initial condition</span>
+            <span><span class="dot" style="background:#2f6fed"></span>diffusion equation</span>
+            <span><span class="dot" style="background:#d7263d"></span>Fisher-KPP</span>
+          </div>
         </div>
       </div>
     </div>
@@ -3288,6 +3329,98 @@ const KlausmeierTippingModule = (function(){
 })();
 
 // ============================================================
+// Diffusion equation vs. Fisher-KPP: front propagation
+// ============================================================
+const DiffFKPPModule = (function(){
+  const L=40.0, M=200, DX=L/M;
+  const xArr=new Float64Array(M);
+  for(let i=0;i<M;i++) xArr[i]=-L/2+DX*(i+0.5);
+  const DT=0.003, SUBSTEPS=15;
+  const PULSE_HALFWIDTH=2.0, PULSE_TRANSITION=0.5;
+
+  const xm1=new Int32Array(M), xp1=new Int32Array(M);
+  for(let i=0;i<M;i++){ xm1[i]=(i-1+M)%M; xp1[i]=(i+1)%M; }
+
+  const params={Ddiff:1.0,Dfkpp:1.0,r:1.0};
+  let showDiff=true, showFkpp=true, paused=false;
+  let uDiff=null, uFkpp=null, icArr=null, t=0;
+
+  function initialCondition(){
+    const ic=new Float64Array(M);
+    for(let i=0;i<M;i++){
+      ic[i]=0.5*(1-Math.tanh((Math.abs(xArr[i])-PULSE_HALFWIDTH)/PULSE_TRANSITION));
+    }
+    return ic;
+  }
+  function reinit(){
+    icArr=initialCondition();
+    uDiff=icArr.slice();
+    uFkpp=icArr.slice();
+    t=0;
+  }
+  reinit();
+
+  function step(){
+    const Ddiff=params.Ddiff, Dfkpp=params.Dfkpp, r=params.r;
+    for(let s=0;s<SUBSTEPS;s++){
+      const uDiffNew=new Float64Array(M), uFkppNew=new Float64Array(M);
+      for(let i=0;i<M;i++){
+        const lapD=(uDiff[xp1[i]]+uDiff[xm1[i]]-2*uDiff[i])/(DX*DX);
+        uDiffNew[i]=uDiff[i]+DT*Ddiff*lapD;
+        const uf=uFkpp[i];
+        const lapF=(uFkpp[xp1[i]]+uFkpp[xm1[i]]-2*uf)/(DX*DX);
+        uFkppNew[i]=Math.min(1.5,Math.max(0, uf+DT*(Dfkpp*lapF+r*uf*(1-uf))));
+      }
+      uDiff=uDiffNew; uFkpp=uFkppNew;
+    }
+    t+=DT*SUBSTEPS;
+  }
+
+  function render(){
+    const series=[{color:'#c9c2b2',width:1.4,dash:[5,3],data:Array.from(xArr).map((xv,i)=>({x:xv,y:icArr[i]}))}];
+    if(showDiff) series.push({color:'#2f6fed',width:2,data:Array.from(xArr).map((xv,i)=>({x:xv,y:uDiff[i]}))});
+    if(showFkpp) series.push({color:'#d7263d',width:2,data:Array.from(xArr).map((xv,i)=>({x:xv,y:uFkpp[i]}))});
+    drawSeriesChart(document.getElementById('dfChart'),{
+      series,
+      xMin:-L/2,xMax:L/2,yMin:-0.05,yMax:1.15,
+      xlabel:'space, x',ylabel:'u(x,t)',
+      refLines:[{y:0,color:'#bbb',dash:[3,3]},{y:1,color:'#bbb',dash:[3,3]}]
+    });
+    const speed=2*Math.sqrt(Math.max(0,params.r*params.Dfkpp));
+    document.getElementById('dfInfo').textContent =
+      't = '+t.toFixed(2)+'\npredicted FKPP front speed ≈ 2√(rD) = '+speed.toFixed(3);
+  }
+
+  function syncReadouts(){
+    document.getElementById('dfDdiffVal').textContent=params.Ddiff.toFixed(2);
+    document.getElementById('dfDfkppVal').textContent=params.Dfkpp.toFixed(2);
+    document.getElementById('dfRVal').textContent=params.r.toFixed(2);
+  }
+
+  function init(){
+    document.getElementById('dfDdiff').addEventListener('input', e=>{ params.Ddiff=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('dfDfkpp').addEventListener('input', e=>{ params.Dfkpp=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('dfR').addEventListener('input', e=>{ params.r=parseFloat(e.target.value); syncReadouts(); });
+    document.getElementById('dfShowDiff').addEventListener('change', e=>{ showDiff=e.target.checked; render(); });
+    document.getElementById('dfShowFkpp').addEventListener('change', e=>{ showFkpp=e.target.checked; render(); });
+    const pauseBtn=document.getElementById('dfPause');
+    pauseBtn.addEventListener('click', ()=>{ paused=!paused; pauseBtn.textContent = paused?'Resume':'Pause'; });
+    document.getElementById('dfReset').addEventListener('click', ()=>{ reinit(); render(); });
+
+    syncReadouts();
+    render();
+  }
+
+  function tick(){
+    if(!isPanelActive('panelDiffFKPP')) return;
+    if(!paused) step();
+    render();
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  return { tick };
+})();
+
+// ============================================================
 // SSF embed
 // ============================================================
 (function(){
@@ -3312,6 +3445,7 @@ setInterval(function(){
   if(typeof HabitatModule!=='undefined') HabitatModule.tick();
   if(typeof IBMPatternModule!=='undefined') IBMPatternModule.tick();
   if(typeof KlausmeierTippingModule!=='undefined') KlausmeierTippingModule.tick();
+  if(typeof DiffFKPPModule!=='undefined') DiffFKPPModule.tick();
 }, 40);
 
 })();
